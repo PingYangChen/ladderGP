@@ -18,7 +18,6 @@ Rcpp::List field2list(const arma::field<arma::mat> gammas);
 
 #include "common.h"
 #include "kernelGP.h"
-//#include "kernelAddHGP.h"
 #include "kerOB.h"
 #include "kerNB.h"
 #include "kerAInt.h"
