@@ -1,75 +1,90 @@
 // HEADER
-void aIntParam2vec(double &theta, double &sigma, arma::mat &thetaZ, arma::vec &sigmaZ, 
-                  const arma::rowvec &param, const arma::uword &xzDim, const arma::uword &zMax);
+void aIntParam2vec(arma::mat &thetaZ, arma::vec &sigmaF, arma::mat &sigmaInt, 
+                   const arma::rowvec &param, const arma::uword &xzDim, const arma::uword &zMax);
                   
-double aIntCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma::uword &zi, const arma::uword &zj,
-                   const arma::uword &xzDim, const double &theta, const double &sigma, 
-                   const arma::mat &thetaZ, const arma::vec &sigmaZ);
+double aIntCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma::uword &zi, const arma::uword &zj, const arma::uword &xzDim, 
+                    const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt);
 
 void aIntCorrMat(arma::mat &psi, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-                const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ);
+                 const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt);
 
 void aIntCorrVecs(arma::mat &phi, const arma::mat &x0, const arma::uvec &z0, 
-                 const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-                 const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ);
-
-void aIntCorrVAR(arma::vec &predvar, const arma::uvec &z0, const double &sigma, const arma::vec &sigmaZ);
+                  const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
+                  const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt);
   
 void aIntLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu, double &nugget,
-               const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-               const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ);
+                const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
+                const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt);
 
 void aIntNewData(arma::vec &y0, arma::vec &mse, arma::vec &ei, arma::vec &ei_1, arma::vec &ei_2, double &ei_alpha, double &min_y,
-                const arma::mat &x0, const arma::uvec &z0, const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-                double &mu, arma::mat &invPsi, const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ);
+                 const arma::mat &x0, const arma::uvec &z0, const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
+                 double &mu, arma::mat &invPsi, const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt);
 
 // BODY
-void aIntParam2vec(double &theta, double &sigma, arma::mat &thetaZ, arma::vec &sigmaZ, 
-                  const arma::rowvec &param, const arma::uword &xzDim, const arma::uword &zMax)
+void aIntParam2vec(arma::mat &thetaZ, arma::vec &sigmaF, arma::mat &sigmaInt, 
+                   const arma::rowvec &param, const arma::uword &xzDim, const arma::uword &zMax)
 {
   /* 
    START ASSIGN PARAMETER POSITION 
    */
   thetaZ.set_size(zMax, xzDim); 
-  sigmaZ.set_size(zMax);
+  sigmaF.set_size(zMax);
+  sigmaInt.set_size(zMax, zMax);
   /* 
    Parameters for Continuous variables
    */
-  theta = param(0);
   arma::uword n_thetaZ = zMax*xzDim;
-  thetaZ = arma::reshape(param.subvec(1, n_thetaZ), zMax, xzDim);
+  thetaZ = arma::reshape(param.subvec(0, n_thetaZ - 1), zMax, xzDim);
   /* 
    Parameters for Variances
    */
-  sigma = param(n_thetaZ + 1);
-  arma::uword ct = n_thetaZ + 2;
-  for (arma::uword u = 0; u < zMax; u++) { sigmaZ(u) = param(ct); ct++; }
+  arma::uword ct = n_thetaZ;
+  //
+  for (arma::uword u = 0; u < zMax; u++) { sigmaF(u) = param(ct); ct++; }
+  // 
+  for (arma::uword i = 0; i < zMax; i++) {
+    sigmaInt(i, i) = 1.0;
+    for (arma::uword j = 0; j < zMax; j++) { 
+      if (i < j) {
+        sigmaInt(i, j) = param(ct); sigmaInt(j, i) = param(ct); 
+        ct++;   
+      }
+    }
+  }
 }
 
 // CORRELATION KERNEL OF GAUSSIAN PROCESS
-double aIntCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma::uword &zi, const arma::uword &zj,
-                   const arma::uword &xzDim, const double &theta, const double &sigma, 
-                   const arma::mat &thetaZ, const arma::vec &sigmaZ) 
+double aIntCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma::uword &zi, const arma::uword &zj, const arma::uword &xzDim, 
+                    const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt) 
 {
-  double zzi = (double)zi;
-  double zzj = (double)zj;
-  double corrZ = sigma*sigma*std::exp(-(1.0)*theta*(zzi - zzj)*(zzi - zzj));
   /* corr X*/
   arma::rowvec xDiff = xi - xj;
   arma::uword zComm = 0;
   if (zi > zj) { zComm = zj; } else { zComm = zi; }
-  double corrX = 0.0;
+  arma::vec corrXvec(zComm, fill::zeros);
   for (arma::uword i = 0; i < zComm; i++) {
     arma::rowvec xdtmp = xDiff.subvec(i*xzDim, (i+1)*xzDim - 1);
-    corrX += sigmaZ(i)*sigmaZ(i)*std::exp(-(1.0)*arma::accu(thetaZ.row(i) % xdtmp));
+    corrXvec(i) = std::exp(-(1.0)*arma::accu(thetaZ.row(i) % xdtmp));
   }
-  double val = corrZ + corrX;
+  double val = 0.0;
+  //
+  for (arma::uword i = 0; i < zComm; i++) {
+    val += sigmaF(i)*corrXvec(i);
+  }
+  //
+  for (arma::uword i = 0; i < zComm; i++) {
+    for (arma::uword j = 0; j < zComm; j++) {
+      if (i < j) {
+        val += sigmaInt(i, j)*corrXvec(i)*corrXvec(j);  
+      }
+    } 
+  }
   return val;
 }
 
 
 void aIntCorrMat(arma::mat &psi, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-                const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ)
+                 const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt)
 {
   arma::uword n = x.n_rows;
   for (uword i = 0; i < n; i++) {
@@ -78,7 +93,7 @@ void aIntCorrMat(arma::mat &psi, const arma::mat &x, const arma::uvec &z, const 
       arma::rowvec xj = x.row(j);
       arma::uword zi = z(i);
       arma::uword zj = z(j);
-      double ker = aIntCorrKern(xi, xj, zi, zj, xzDim, theta, sigma, thetaZ, sigmaZ);
+      double ker = aIntCorrKern(xi, xj, zi, zj, xzDim, thetaZ, sigmaF, sigmaInt);
       psi(i, j) = ker;
       psi(j, i) = ker;
     }
@@ -86,8 +101,8 @@ void aIntCorrMat(arma::mat &psi, const arma::mat &x, const arma::uvec &z, const 
 }
 
 void aIntCorrVecs(arma::mat &phi, const arma::mat &x0, const arma::uvec &z0, 
-                 const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-                 const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ)
+                  const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
+                  const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt)
 {
   arma::uword n = x.n_rows;
   arma::uword n0 = x0.n_rows;
@@ -97,31 +112,20 @@ void aIntCorrVecs(arma::mat &phi, const arma::mat &x0, const arma::uvec &z0,
     for (uword i = 0; i < n; i++) {
       arma::rowvec xi = x.row(i); 
       arma::uword zi = z(i); 
-      double ker = aIntCorrKern(xi, x0j, zi, z0j, xzDim, theta, sigma, thetaZ, sigmaZ);
+      double ker = aIntCorrKern(xi, x0j, zi, z0j, xzDim, thetaZ, sigmaF, sigmaInt);
       phi(i, j) = ker;
     }
   }
 }
 
-void aIntCorrVAR(arma::vec &predvar, const arma::uvec &z0, const double &sigma, const arma::vec &sigmaZ)
-{
-  arma::uword n0 = z0.n_elem;
-  for (uword j = 0; j < n0; j++) {
-    predvar(j) = sigma;
-    arma::uword z0j = z0(j);
-    for (arma::uword i = 0; i < z0j; i++) {
-      predvar(j) += sigmaZ(i);
-    }
-  }
-}
 
 void aIntLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu, double &nugget,
-               const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-               const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ)
+                const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
+                const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt)
 {
   arma::uword n = y.n_elem;
   arma::vec onevec(n, fill::ones);
-  aIntCorrMat(psi, x, z, xzDim, theta, sigma, thetaZ, sigmaZ);
+  aIntCorrMat(psi, x, z, xzDim, thetaZ, sigmaF, sigmaInt);
   arma::vec eigval;
   arma::mat eigvec;
   arma::eig_sym(eigval, eigvec, psi);
@@ -134,7 +138,7 @@ void aIntLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu
   double detPsi;
   double signDetPsi;
   bool invSucc;
-  invSucc = arma::inv_sympd(invPsi, psi);
+  invSucc = arma::inv_sympd(invPsi, psi, inv_opts::allow_approx);
   arma::log_det(detPsi, signDetPsi, psi);
   //if (std::isfinite(detPsi) & (signDetPsi >= 0)) 
   if (invSucc) {
@@ -151,20 +155,18 @@ void aIntLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu
 
 void aIntNewData(arma::vec &y0, arma::vec &mse, arma::vec &ei, arma::vec &ei_1, arma::vec &ei_2, double &ei_alpha, double &min_y,
                 const arma::mat &x0, const arma::uvec &z0, const arma::vec &y, const arma::mat &x, const arma::uvec &z, const arma::uword &xzDim, 
-                double &mu, arma::mat &invPsi, const double &theta, const double &sigma, const arma::mat &thetaZ, const arma::vec &sigmaZ)
+                double &mu, arma::mat &invPsi, const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt)
 {
   arma::uword n = x.n_rows;
   arma::uword n0 = x0.n_rows;
   arma::mat phi(n, n0, fill::zeros);
-  aIntCorrVecs(phi, x0, z0, x, z, xzDim, theta, sigma, thetaZ, sigmaZ);
-  arma::vec predvar(n0, fill::zeros);
-  aIntCorrVAR(predvar, z0, sigma, sigmaZ);
+  aIntCorrVecs(phi, x0, z0, x, z, xzDim, thetaZ, sigmaF, sigmaInt);
   arma::vec onevec(n, fill::ones);
   arma::vec resid = y - mu*onevec; 
   arma::vec psiinvresid = invPsi*resid;
   for (uword j = 0; j < n0; j++) {
     y0(j) = mu + arma::as_scalar(phi.col(j).t()*psiinvresid);
-    mse(j) = std::abs(predvar(j) - arma::as_scalar(phi.col(j).t()*invPsi*phi.col(j))) + datum::eps;
+    mse(j) = std::abs(1. - arma::as_scalar(phi.col(j).t()*invPsi*phi.col(j))) + datum::eps;
   }
   // Compute expected improvement
   //double min_val = arma::min(y);

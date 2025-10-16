@@ -102,7 +102,7 @@ Rcpp::List lgpOBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
 }
 
 //[[Rcpp::export]]
-Rcpp::List lgpOBPred(arma::mat x0, arma::umat z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
+Rcpp::List lgpOBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
                      arma::rowvec param, arma::mat invPsi, double mu, double sigma2, double ei_alpha, double min_y)
 {
   arma::uword n0 = x0.n_rows;
@@ -132,7 +132,7 @@ Rcpp::List lgpOBPred(arma::mat x0, arma::umat z0, arma::vec y, arma::mat x, arma
 // Stage as a nominal variable
 
 //[[Rcpp::export]]
-double lgpOBNbjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+double lgpNBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -176,7 +176,7 @@ Rcpp::List lgpNBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
 }
 
 //[[Rcpp::export]]
-Rcpp::List lgpNBPred(arma::mat x0, arma::umat z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
+Rcpp::List lgpNBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
                      arma::rowvec param, arma::mat invPsi, double mu, double sigma2, double ei_alpha, double min_y)
 {
   arma::uword n0 = x0.n_rows;
@@ -203,14 +203,8 @@ Rcpp::List lgpNBPred(arma::mat x0, arma::umat z0, arma::vec y, arma::mat x, arma
 
 
 
-
-
-
-
-/*
-// AddHGP
 //[[Rcpp::export]]
-double ahgpObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+double aIntObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -218,18 +212,18 @@ double ahgpObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, ar
   arma::mat psi(n, n, fill::eye); 
   arma::mat invPsi(n, n, fill::eye);
   //
-  double theta, sigma;
   arma::mat thetaZ;
-  arma::vec sigmaZ;
+  arma::vec sigmaF;
+  arma::mat sigmaInt;
   //double nugget = 0.;
-  ahgpParam2vec(theta, sigma, thetaZ, sigmaZ, param, xzDim, zMax);
-  ahgpLogLik(negloglik, psi, invPsi, mu, nugget, y, x, z, xzDim, 
-             theta, sigma, thetaZ, sigmaZ);
+  aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  aIntLogLik(negloglik, psi, invPsi, mu, nugget, y, x, z, xzDim, 
+             thetaZ, sigmaF, sigmaInt);
   return negloglik;
 }
 
 //[[Rcpp::export]]
-Rcpp::List ahgpModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+Rcpp::List aIntModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -237,19 +231,18 @@ Rcpp::List ahgpModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z,
   arma::mat psi(n, n, fill::eye); 
   arma::mat invPsi(n, n, fill::eye);
   //
-  double theta, sigma;
   arma::mat thetaZ;
-  arma::vec sigmaZ;
+  arma::vec sigmaF;
+  arma::mat sigmaInt;
   //double nugget = 0.;
-  ahgpParam2vec(theta, sigma, thetaZ, sigmaZ, param, xzDim, zMax);
-  ahgpLogLik(negloglik, psi, invPsi, mu, nugget, y, x, z, xzDim, 
-             theta, sigma, thetaZ, sigmaZ);
+  aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  aIntLogLik(negloglik, psi, invPsi, mu, nugget, y, x, z, xzDim, 
+             thetaZ, sigmaF, sigmaInt);
   //
   return List::create(Named("mu") = wrap(mu),
-                      Named("theta") = wrap(theta),
                       Named("thetaZ") = wrap(thetaZ),
-                      Named("sigma") = wrap(sigma),
-                      Named("sigmaZ") = wrap(sigmaZ),
+                      Named("sigmaF") = wrap(sigmaF),
+                      Named("sigmaInt") = wrap(sigmaInt),
                       Named("psi") = wrap(psi),
                       Named("invPsi") = wrap(invPsi),
                       Named("negloglik") = wrap(negloglik),
@@ -259,24 +252,24 @@ Rcpp::List ahgpModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z,
 }
 
 //[[Rcpp::export]]
-Rcpp::List ahgpPred(arma::mat x0, arma::umat z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
+Rcpp::List aIntPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
                     arma::rowvec param, arma::mat invPsi, double mu, double ei_alpha, double min_y)
 {
   arma::uword n0 = x0.n_rows;
   arma::uword zMax = z.max();
   //
-  double theta, sigma;
   arma::mat thetaZ;
-  arma::vec sigmaZ;
-  ahgpParam2vec(theta, sigma, thetaZ, sigmaZ, param, xzDim, zMax);
+  arma::vec sigmaF;
+  arma::mat sigmaInt;
+  aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
   //
   arma::vec y0(n0, fill::zeros);
   arma::vec mse(n0, fill::zeros);
   arma::vec ei(n0, fill::zeros);
   arma::vec ei_1(n0, fill::zeros);
   arma::vec ei_2(n0, fill::zeros);
-  ahgpNewData(y0, mse, ei, ei_1, ei_2, ei_alpha, min_y, x0, z0, y, x, z, xzDim, 
-              mu, invPsi, theta, sigma, thetaZ, sigmaZ);
+  aIntNewData(y0, mse, ei, ei_1, ei_2, ei_alpha, min_y, x0, z0, y, x, z, xzDim, 
+              mu, invPsi, thetaZ, sigmaF, sigmaInt);
   //
   return List::create(Named("pred") = wrap(y0),
                       Named("mse") = wrap(mse),
@@ -285,7 +278,7 @@ Rcpp::List ahgpPred(arma::mat x0, arma::umat z0, arma::vec y, arma::mat x, arma:
                       Named("uncertainty") = wrap(ei_2)
   );
 }
- */
+
 
 
 

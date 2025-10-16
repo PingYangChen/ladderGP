@@ -1,4 +1,4 @@
-source('R/models.R')
+source('R/ordinaryGP.R')
 source('R/testfunction.R')
 
 #library(lhs)

@@ -32,17 +32,22 @@ void lgpNBParam2vec(arma::mat &tau, arma::mat &theta,
   /* 
    Parameters for Continuous variables
    */
-  arma::uword ct = 0;
-  //arma::uword n_tau = (arma::uword)(0.5*zMax*(zMax - 1));
   arma::uword n_theta = zMax*xzDim;
+  theta = arma::reshape(param.subvec(0, n_theta - 1), zMax, xzDim);
+  /* 
+   Parameters for Categorical variables
+   */
+  //arma::uword n_tau = (arma::uword)(0.5*zMax*(zMax - 1));
+  arma::uword ct = n_theta;
   for (arma::uword i = 0; i < zMax; i++) {
     tau(i, i) = 1.0;
-    for (arma::uword j = 0; j < i; j++) {
-      tau(i, j) = param(ct); tau(j, i) = param(ct);
-      ct += 1;
+    for (arma::uword j = 0; j < zMax; j++) {
+      if (i < j) {
+        tau(i, j) = param(ct); tau(j, i) = param(ct);
+        ct++;
+      }
     } 
   }
-  theta = arma::reshape(param.subvec(ct, ct + n_theta), zMax, xzDim);
 }
 
 // CORRELATION KERNEL OF GAUSSIAN PROCESS
@@ -58,7 +63,7 @@ double lgpNBCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma:
     arma::rowvec xdtmp = xDiff.subvec(i*xzDim, (i+1)*xzDim - 1);
     logCorrX += arma::accu(theta.row(i) % xdtmp);
   }
-  double val = tau(zi, zj)*std::exp((-1.0)*logCorrX);
+  double val = tau(zi-1, zj-1)*std::exp((-1.0)*logCorrX);
   return val;
 }
 
@@ -117,7 +122,7 @@ void lgpNBLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &m
   double detPsi;
   double signDetPsi;
   bool invSucc;
-  invSucc = arma::inv_sympd(invPsi, psi);
+  invSucc = arma::inv_sympd(invPsi, psi, inv_opts::allow_approx);
   arma::log_det(detPsi, signDetPsi, psi);
   //if (std::isfinite(detPsi) & (signDetPsi >= 0)) 
   if (invSucc) {

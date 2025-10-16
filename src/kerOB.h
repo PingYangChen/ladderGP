@@ -112,7 +112,7 @@ void lgpOBLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &m
   double detPsi;
   double signDetPsi;
   bool invSucc;
-  invSucc = arma::inv_sympd(invPsi, psi);
+  invSucc = arma::inv_sympd(invPsi, psi, inv_opts::allow_approx);
   arma::log_det(detPsi, signDetPsi, psi);
   //if (std::isfinite(detPsi) & (signDetPsi >= 0)) 
   if (invSucc) {
