@@ -1,0 +1,29 @@
+---
+title: "manual"
+output: html_document
+date: "2025-10-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r loadm, echo=TRUE, eval=TRUE}
+source('R/mladderGP.R')
+source('R/testfunction.R')
+library(SFDesign)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r loada, echo=TRUE, eval=TRUE}
+source('R/aladderGP.R')
+source('R/testfunction.R')
+library(SFDesign)
+```
+

@@ -4,8 +4,8 @@ source('R/testfunction.R')
 
 library(SFDesign)
 
-p_data <- c(3, 6, 9)
-n_train <- c(10, 10, 10)*5
+p_data <- c(1, 2, 3)
+n_train <- c(10, 10, 10)
 n_test <- c(3, 3, 3)
 
 xList <- lapply(1:length(p_data), function(k) {
@@ -37,16 +37,12 @@ mLadderMdl_o <- mLadderFit(yList, xList, zType = "o",
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = TRUE)
 
-mLadderMdl_o
-
 mLadderPred(mLadderMdl_o, x0List)$pred
 
 
 mLadderMdl_n <- mLadderFit(yList, xList, zType = "n", 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = TRUE)
-
-mLadderMdl_n
 
 mLadderPred(mLadderMdl_n, x0List)$pred
 

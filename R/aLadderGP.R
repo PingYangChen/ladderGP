@@ -14,9 +14,9 @@ sourceCpp(file.path('src/cppFunc.cpp'))
 # x: matrix
 # z: integer vector
 aLadderFit <- function(yList, xList, 
-                      contiParRange = 10^c(-3, .5), 
-                      varParRange = 10^c(-3, .5),
-                      nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = TRUE) {
+                       contiParRange = 10^c(-3, .5), 
+                       varParRange = 10^c(-3, .5),
+                       nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = TRUE) {
   
   cputime <- system.time({
     xDims <- sapply(1:length(xList), function(k) ncol(xList[[k]]))
