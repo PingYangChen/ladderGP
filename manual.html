@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ping-Yang Chen" />
 
-<meta name="date" content="2025-10-21" />
+<meta name="date" content="2025-10-22" />
 
 <title>Manual of Gaussian Process Modelling Functions for Ladder-shaped Input Data</title>
 
@@ -1500,13 +1500,19 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Manual of Gaussian Process Modelling
 Functions for Ladder-shaped Input Data</h1>
 <h4 class="author">Ping-Yang Chen</h4>
-<h4 class="date">2025-10-21</h4>
+<h4 class="date">2025-10-22</h4>
 
 </div>
 
 
 <div id="data-preparation" class="section level1">
 <h1>Data Preparation</h1>
+<p>考慮 <span class="math inline">\(p\)</span> 個因子的多階段實驗，<span class="math inline">\(X^{(z)}_{j}\)</span></p>
+<p>若實驗執行一個階段，則 <span class="math inline">\(x_i=
+(x^{(1)}_{1i}, x^{(1)}_{2i}, \ldots, x^{(1)}_{pi})\)</span></p>
+<p>若實驗執行兩個階段，則 <span class="math inline">\(x_i=
+(x^{(1)}_{1i}, \ldots, x^{(1)}_{pi}, x^{(2)}_{1i}, \ldots,
+x^{(2)}_{pi})\)</span></p>
 <p>In a multi-stage experiment, there are <span class="math inline">\(p\)</span> factors.</p>
 <pre class="r"><code>source(&#39;R/testfunction.R&#39;)
 library(SFDesign)</code></pre>
@@ -1537,8 +1543,13 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
 </div>
 <div id="gaussian-process-modelling" class="section level1">
 <h1>Gaussian Process Modelling</h1>
-<div id="additive-gaussian-process" class="section level2">
-<h2>Additive Gaussian Process</h2>
+<p>Gaussian Process Suppose <span class="math inline">\(y_i\)</span> is
+a real value, <span class="math inline">\(Y = (y_1, \ldots, y_n) \sim
+MVN(\mu, \sigma^2\Psi)\)</span>, <span class="math inline">\(\mu =
+(\mu(x_1), \ldots, \mu(x_n))^\top\)</span> and <span class="math inline">\(\sigma^2\in \mathbb{R}\)</span>, <span class="math inline">\(\Psi\in \mathbb{R}^{n\times n}\)</span></p>
+<div id="additive-correlation-structure-with-interaction-kernel" class="section level2">
+<h2>Additive Correlation Structure with Interaction Kernel</h2>
+<p>輔助變數 <span class="math inline">\(Z\)</span> 表示階數</p>
 <p><span class="math display">\[
 \Psi_{st} =  \sum_{z=1}^{\min{\{z_s, z_t\}}} \sigma_z^2
 \exp{\left\{
@@ -1611,23 +1622,108 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
 <pre class="r"><code>aLadderMdl &lt;- aLadderFit(yList, xList, 
                          contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
                          nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## aLadderGP FIT CPU time: 1.64 seconds.</code></pre>
+<pre><code>## aLadderGP FIT CPU time: 1.61 seconds.</code></pre>
+<table>
+<colgroup>
+<col width="10%" />
+<col width="89%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸出變數名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mu</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>thetaZ</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>sigmaF</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>sigmaInt</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>psi</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>invPsi</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>negloglik</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>nugget</code></td>
+<td>GP 相關矩陣所使用的正定性調整值</td>
+</tr>
+<tr class="odd">
+<td><code>vecParams</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>data</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>cputime</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <p>mu, thetaZ, sigmaF, sigmaInt, psi, invPsi, negloglik, nugget,
 vecParams, data, cputime</p>
+<table style="width:100%;">
+<colgroup>
+<col width="11%" />
+<col width="77%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸入變數名稱</th>
+<th>說明</th>
+<th>預設值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>gpMdl</code></td>
+<td>R list 物件。經 <code>aLadderFit</code> 函數訓練後的 GP
+模型物件</td>
+<td>無</td>
+</tr>
+<tr class="even">
+<td><code>x0List</code></td>
+<td>R list 物件。每個 list 內存放對應階數的多維解釋變數 (見範例)</td>
+<td><code>NULL</code></td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code>aLadderPred(aLadderMdl, x0List)$pred</code></pre>
-<pre><code>##             [,1]
-##  [1,] -10313.492
-##  [2,] -10411.311
-##  [3,] -10093.038
-##  [4,]  -1352.722
-##  [5,]  14230.728
-##  [6,] -12357.008
-##  [7,]  10869.280
-##  [8,]  71217.646
-##  [9,]  -2039.191</code></pre>
+<pre><code>##           [,1]
+##  [1,] 442111.1
+##  [2,] 420659.5
+##  [3,] 401517.9
+##  [4,] 399186.9
+##  [5,] 351633.6
+##  [6,] 322453.2
+##  [7,] 250156.3
+##  [8,] 304895.2
+##  [9,] 168954.0</code></pre>
 </div>
-<div id="multiplicative-gaussian-process" class="section level2">
-<h2>Multiplicative Gaussian Process</h2>
+<div id="multiplicative-stage-crossing-correlation-structure" class="section level2">
+<h2>Multiplicative Stage-crossing Correlation Structure</h2>
 <p><span class="math display">\[
 \Psi_{st} = \exp{\left\{
     -\tau (z_s - z_t)^2
@@ -1715,33 +1811,33 @@ z_t}\)</span> 的搜尋範圍(最小值、最大值)。僅適用於
 <pre class="r"><code>mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(o) FIT CPU time: 1.45 seconds.</code></pre>
+<pre><code>## mLadderGP(o) FIT CPU time: 1.39 seconds.</code></pre>
 <pre class="r"><code>mLadderPred(mLadderMdl_o, x0List)$pred</code></pre>
-<pre><code>##            [,1]
-##  [1,]  14.68311
-##  [2,]  17.21892
-##  [3,]  10.24522
-##  [4,]  31.35048
-##  [5,]  39.40845
-##  [6,]  26.73863
-##  [7,]   2.85308
-##  [8,] 129.11836
-##  [9,]  22.23474</code></pre>
+<pre><code>##             [,1]
+##  [1,]  14.156399
+##  [2,]  17.592418
+##  [3,]  19.462375
+##  [4,]  19.535021
+##  [5,]  19.732370
+##  [6,]   9.889604
+##  [7,]  83.382057
+##  [8,] 128.670859
+##  [9,] 110.635224</code></pre>
 <pre class="r"><code>mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(n) FIT CPU time: 1.47 seconds.</code></pre>
+<pre><code>## mLadderGP(n) FIT CPU time: 1.44 seconds.</code></pre>
 <pre class="r"><code>mLadderPred(mLadderMdl_n, x0List)$pred</code></pre>
-<pre><code>##             [,1]
-##  [1,]   14.96189
-##  [2,]   16.94869
-##  [3,]   11.39289
-##  [4,] -230.46242
-##  [5,] -273.21553
-##  [6,]  -39.26120
-##  [7,]  -28.33049
-##  [8,]  -95.63724
-##  [9,]  -42.71374</code></pre>
+<pre><code>##            [,1]
+##  [1,] 14.217200
+##  [2,] 17.765563
+##  [3,] 20.389873
+##  [4,] 22.838963
+##  [5,] 22.413741
+##  [6,]  9.056305
+##  [7,] 32.139522
+##  [8,] 49.724550
+##  [9,] 64.488350</code></pre>
 </div>
 </div>
 

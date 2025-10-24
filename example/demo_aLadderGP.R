@@ -39,6 +39,8 @@ aLadderMdl <- aLadderFit(yList, xList,
 
 aLadderMdl
 
+names(aLadderMdl)
+
 
 aLadderPred(aLadderMdl, x0List)$pred
 
