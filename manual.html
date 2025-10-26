@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ping-Yang Chen" />
 
-<meta name="date" content="2025-10-22" />
+<meta name="date" content="2025-10-26" />
 
 <title>Manual of Gaussian Process Modelling Functions for Ladder-shaped Input Data</title>
 
@@ -1500,29 +1500,72 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Manual of Gaussian Process Modelling
 Functions for Ladder-shaped Input Data</h1>
 <h4 class="author">Ping-Yang Chen</h4>
-<h4 class="date">2025-10-22</h4>
+<h4 class="date">2025-10-26</h4>
 
 </div>
 
 
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>考慮 <span class="math inline">\(p\)</span>
+個因子的多階段實驗資料，每個階段對此 <span class="math inline">\(p\)</span>
+個因子有不同的設定值，使得解釋變數的維度隨著階段數線性增加。
+資料包含至多 <span class="math inline">\(Z\)</span>
+個階段實驗的實驗資料，定義 <span class="math inline">\(X^{(z)}_{j}\)</span> 為第 <span class="math inline">\(z\)</span> 個階段的第 <span class="math inline">\(j\)</span> 個因子，<span class="math inline">\(j=1,\ldots,p\)</span>，<span class="math inline">\(z=1,\ldots,Z\)</span>。</p>
+<ul>
+<li>若實驗只進行一階段，則解釋變數為長度 <span class="math inline">\(p\)</span> 的向量：<span class="math inline">\(\mathbf{x}^{(1)} = \left(x^{(1)}_{1}, x^{(1)}_{2},
+\ldots, x^{(1)}_{p}\right)\)</span></li>
+<li>若實驗執行兩個階段，則解釋變數為長度 <span class="math inline">\(2p\)</span> 的向量： <span class="math inline">\(\mathbf{x}^{(2)} = \left(x^{(1)}_{1}, x^{(1)}_{2},
+\ldots, x^{(1)}_{p}, x^{(2)}_{1}, x^{(2)}_{2}, \ldots,
+x^{(2)}_{p}\right)\)</span></li>
+</ul>
+<p>以此類推。反應變數 <span class="math inline">\(Y\)</span>
+為實數。此模組考慮多階段實驗資料的代理模型建構問題，如何針對資料中不同維度數目的解釋變數考量其之間的相關性，提出可行的
+Gaussian Process 建模方式。</p>
+</div>
 <div id="data-preparation" class="section level1">
 <h1>Data Preparation</h1>
-<p>考慮 <span class="math inline">\(p\)</span> 個因子的多階段實驗，<span class="math inline">\(X^{(z)}_{j}\)</span></p>
-<p>若實驗執行一個階段，則 <span class="math inline">\(x_i=
-(x^{(1)}_{1i}, x^{(1)}_{2i}, \ldots, x^{(1)}_{pi})\)</span></p>
-<p>若實驗執行兩個階段，則 <span class="math inline">\(x_i=
-(x^{(1)}_{1i}, \ldots, x^{(1)}_{pi}, x^{(2)}_{1i}, \ldots,
-x^{(2)}_{pi})\)</span></p>
-<p>In a multi-stage experiment, there are <span class="math inline">\(p\)</span> factors.</p>
+<p>在此模組中，以 R <code>list</code>
+物件分別儲存多階段實驗資料的解釋變數與反應變數，每個 list
+儲存實驗階段相同的資料。
+舉例來說，若資料包含至多<strong>三個階段</strong>的 <span class="math inline">\(p\)</span> 因子實驗數據，則解釋變數
+<code>xlist</code> 與反應變數 <code>ylist</code> 分別為<strong>長度為 3
+</strong>的 R <code>list</code> 物件。</p>
+<ul>
+<li>解釋變數 <code>xlist</code> 中，第一格為單階段的 <span class="math inline">\(p\)</span> 因子實驗數據；<code>xlist</code>
+的第二格為雙階段的 <span class="math inline">\(p\)</span>
+因子實驗數據，共有 <span class="math inline">\(2p\)</span>
+個因子；<code>xlist</code> 的第三格為三階段的 <span class="math inline">\(p\)</span> 因子實驗數據，共有 <span class="math inline">\(3p\)</span> 個因子</li>
+<li>反應變數 <code>ylist</code>中，第一格為對應 <code>xlist[[1]]</code>
+中單階段實驗的反應變數向量、第二格為對應 <code>xlist[[2]]</code>
+中雙階段實驗的反應變數向量、第三格為對應 <code>xlist[[3]]</code>
+中三階段實驗的反應變數向量。</li>
+</ul>
+<div class="figure" style="text-align: center">
+<img role="img" aria-label="多階段實驗資料儲存方式" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABTcAAAOICAMAAAA0JjULAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAGwUExURQAAAAAAACBggAAAAAAAABVggAAAABhggL9QGAAAAAAAABVggAAAAAAAAAAAAAAAABZggwAAAAAAABVggr9QFQAAAAAAABRgggAAAAAAABZggQAAAAAAABVgggAAAAAAABVggsBPFQAAAAAAABRgggAAAAAAAAAAABVggwAAABVggwAAAAAAABVggsBPFQAAABVgggAAAAAAABVgggAAAAYHCAswQQwODxIWFxVgghgdHx4kJiQrLioyNjA5PTZBRT1ITUNPVUax4UlWXEyz4k9dZFK241VlbFe45Ftsc1275WByemO95mZ5gmnA52yAiW/C6HKIkXTF6XiPmXrH6X6WoIDJ6oSdqIbM64uksIzO7JGsuJHR7Zezv5fT7p26x53W76PBz6PY8Kja8anI1q7d8q/P3rTf87XX5rni9Lve7b/k9cBPFcHl9cXn9svp99Hr99bu+Nzw+eLz+uj1++74/PKqhPKtiPOykPP6/fS1k/S6m/W9n/bFq/bGrffKsvfNtvjPuvjSvvnXxfnayfn9/vrf0fvi1fvk2Pvn3Pzs5P3v6P738/769//8+////50GqVAAAAA0dFJOUwAICBAYGCAgICgwMDhASFBQWGBgYGhwcHiAgIePj5efn5+nr6+3v8fHz8/X39/f5+fv9/c284RJAAAACXBIWXMAABcRAAAXEQHKJvM/AABJYUlEQVR4Xu3d/X9UyZ7Y95YlyxeZhki+YHWQIReCiIL2EimlFSMYhpm5mEvkWTLBGBMFY2IuweRq1157x+ts/LDJbmLHD/dfzqvqPFef+naf01Wt7qrP+4cZcaobdYvuj85DndODAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABciJ/6KO78HZZV81UAoAs7iVMp7my/GbE0mq8CAF3YSZxKcWf7zYil0XwVAOjCTuJUijvbb0YsjearAEAXdhKnUtzZfjNiaTRfBQC6sJM4leLO9psRS6P5KgDQhZ3EqRR3tt+MWBrNVwGALuwkTqW4s/1mxNJovgoAdGEncSrFne03I5ZG81UAoAs7iVMp7my/GbE0mq8CAF3YSZxKcWf7zYil0XwVAOjCTuJUijvbb0YsjearAEAXdhKnUtzZfjNiaTRfBQC6qOfwL35n/Oc/rS/8P7OFv/tXtWXFne0343L71T/Lnum//HW17Nd/mS37Tf2GMWi+CgB0UavhT3/6n7JI/EV94b/Llv2H+rLizvabccn9T/mviFok/3G25J//qn67GDRfBQC6qOfwpz/PKlFf4fyzvCX11c1Yu/nd/5Y/2T8oFvxBvuDvNm8XgearAEAX9Rz+9C/+Y5aJ2gpnvrr57+o3i7abv/qT7Nn+YbHgj7M//+PmzWLQfBUA6KLRw5/+bdaJaoWzWN38s8bNijvbb8al93fzp/v3sj/+z9mf/qS2wzMWzVcBgC4aPfzpp/+QlaJc4cxXN//f5q2KO9tvxuWX78/8Y/OHv52vfv59+1YRaL4KAHTRDOJP/yorRbHCma9uNo+wx9zNX+ep/Af6D7/Jvv4j+0YxaL4KAHTRDOJPP/1/WSv+r+xP+epm4wB71N387u9nz/hPfvXdd3+QzUGqT0uKR/NVAKALq4jFGuZ//Be1P/wna3Uz5m5+94fZc/7Nd9/9UfbV/2LfIgrNVwGALqwilquYf25/XVfc2X4zxuDX/9I857/89d/Lnvw/sW8Qh+arAEAXdhJ/+rP/bHKhVzgb6551xZ3tN2MU8oPof/TPs37+HXs8Ds1XAYAu7CSWZ1v+ebm6+W/sW8Tdze/+Sfa0M//QHo1E81UAoAs7iT/99KfFCme+utk4wzJT3Nl+M8bhf8jPSdf+OLoTLHPNVwGALuwk/vTTT/93low/z1c3G2dYZoo722/GSPyDqpvlGZexab4KAHRhJ7E62zK/yMe/t4fj7+Z3/7TI5j+yR6LRfBUA6MJOopZf3iPTPMMyU9zZfjPG4u/kzz2+yyCVmq8CAF3YSdSKy3tozQt65Io722/GWOSH1KM9mE43gZnYSTTysy31GZb/hz2mFXe234yRyKdw/u53v/un9lA0mq8CAF3YSczkl/cYP8MyU9zZfjNG4n8vf21EerIQ3QRmYicxU6xw2hf0yBV3tt+McchPFDL+MsqT0+kmMBM7ibl/n2Ujv7yHrbiz/WaMQnH1uEyUF0Oim8BM7CTm/p+sGuOnChnFne03YxTyD8v4Z/ns9xgvvkk3gZnYScyl283iw9n+4B9m/4/xYu90E5iJncRcst0sPgz4N9/9KruwR4wfLkQ3gZnYScwl281/lK9l/u3q+FB8H2ZJN4GZ2EnMpdrN/Brv2V7N/MJIUZ411HwVAOjCTmIu1W7mH/ybHUUvPj39N/atItB8FQDowk5iLtFu5seCivMr80Prv/sf7dstv+arAEAXdhJzaXazuPLm/5r/uTjhMsKrcDZfBQC6sJOYS7ObYzs0iytxFiGNR/NVAKALO4m5JLtZXAapOoBezEqK78JIzVcBgC7sJOZS7GaxVf6HtWXFXKToLozUfBUA6MJOYi7FbuaXQWpeyiP/EPXoLozUfBUA6MJO4lSKO9tvRiyN5qsAQBd2EqdS3Nl+M2JpNF8FALqwkziV4s72mxFLo/kqANCFncSpFHe234xYGs1XAYAu7CROpbiz/WbE0mi+CgB0YSdxKsWd7TcjlkbzVQCgCzuJUynubL8ZsTSarwIAXdhJnEpxZ/vNiKXRfBUA6MJO4lSKO9tvRiyN5qsAQBd2EqdS3Nl+M2JpNF8FALqwkziV4s72mxFLo/kqANCFncSpFHe234xYGs1XAYAu7CROpbiz/WbE0mi+CgB0YSdxKsWd7TcjlkbzVQAAAAAAAAAAAAAAAAB489sJ7NsPfn8h2Y8SAIKxO2mzb083AaTO7qTNvj3dBJC63/72t//aydHN8wVDNwHME90EgG7oJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHQz725+Oftyfn7+7uy9PTADuglgnubbzY8vjtXH87NHSqmjH+3B3ugmgHmaZzfffqOUUh/fHun/KfXMHu+LbgKYp3l28/3Zc6XU2dE3L398qsP5xr5BT3QTwDzNs5vn55+VUiev9VcvlVKP7eGe6CaAeZpvN8+VUvl+Tb3GaQo6O7oJYJ7m382P2VfvlVIv7OF+6CaAebqwbp5/rdS31mhPdBPAPF1cN7/1toOTbgKYp4vr5gu6CWApXVw3f2Q7HcBSurhu/qDUD9ZoT3QTwDxdXDefeZv4TjcBzNP8u/kh//Ib9VBf4sMDuglgnubfzbPsq09H6pU92hPdBDBP8+/mk+yr576OptNNAPM1/25mR4NeqkfeLsFJNwHM0/y7eXr86MWzx+rbz/ZYb3QTwDzNv5sfP706PX1THFX3gW4CmKcL6Ka9bGZ0E8A80U0A6IZuAkA3dBMAuplvN7/Uzhfyh24CmKf5dvNMKW9nCVXoJoB5mmc3T7891h+c/uzUHpgR3QQwT/Ps5lnBHpgR3QQwT/PsZih0E8A80U0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDd0EwC6oZsA0A3dBIBu6CYAdEM3AaAbugkA3dBNAOiGbgJAN3QTALqhmwDQDd0EgG7oJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDd0EwC6oZsA0A3dBIBu6CYAdEM3AaAbugkA3dBNAOiGbgJAN3QTACZY2zlcr/2RbgKAaP3moVJ0EwCmtH5LaXQTAKZ0eTjYppsA0Mka3QSAbugmAHRDNwGgG7oJAO3WbxzoI0G3d29vrdaX000AaLN5Vyk1WLlp5h3trdRG6CYAtBjt7iulVnYP7ozuKKWu14boJgC0uqyUuntbr2juKLVXG6CbANBqtVzNXFdK1fZw0k0AaKf3b2aaZ6TTTQBoV3Vzn24CwBToJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAutHnWWZf7St1qbGcbgLAOH2+UN7HfaWG1QDdBIBWG0qpDfPVyoFSV8vluqdXarejmwBgXNKXQdrTm+dD/RmWe8O1bPmGvr7c/uXqhnQTALSro8z18qstvXg9/8NoVG6q000A6IZuAvHY2W3IdtWNy27mGu1trfndb3cZdZKfkjwaDN1EYBvNV/aOPZ7LbuYa7W+7+e3rO/cnjrrIT0keDWvXfMJDqXZAuCG7mWu0N33Nypr9LqOl2uQfQ35K8mgwdBOBDZuv7F17PJfdzDXan96/X2N2WE07WlipT0GZ+JTk0bCmzMjCdnPjxv1i3nlBfkryaDB0E4FNmZGF7ebq1u3DUXOR/JTk0bCqzVb9STnOjITsZrWmbW2Jy6P6B3fTPGhraW1LvOVBy6PB0E0EVttslTISspv71UOwtsTl0cFg7ZqegaKsbtaekn6nWw9aHp2XkZSRkN20F5bE0ZWrtw7Mg3LfxEw+Fx60POoX3cT8SGUM2U0rezXi6KXre/lb2XkTkyf3g5ZHg1qmbupV+vwn7bqJIT9oedQvuon50a9sV0YWrZt6T1up/SaaXEZ5NCixmxtDrfaxY364y6g5R7eqH7TrJhnpKU0a9YtuYn70K9uVkVXzVvY/j8RdRs05ava0lVpvYshllEeDErvZl/nldsteWnKW0XCOmoeq7t/cutS2f7NGfkryqF90E/OjX9neM2K2Oa0D3jXOMhrOUfNWPrw7Gl6jm5VA3TzcHV0xK790c47o5rJYpm7ev3XNrPyajcjWmxhyGeXRoJaom/lJ4Il38/Mre0lgdHNZLFE3y/cy3awJ081Kut38fHp8Yi8LjG4uiyXqZinBbq7rPc21i/9U6GbOczc/nx4rRTfRboZumqNG1QZdTVLdNNO8xw6e6bNFt61lbd1snsxt38NYGxXTKNXB7miz/IlfNv8A1/Xyu+bLTPNfRC6jPGok2s0fHz2hm6lZuW3ehY1yXdFLqqu+Flq6aZ3M3VrGK9XJdHu3tssVobXsrWvmWG5Wb2VrRUkuozyqLVY3r+pHc9NauKYnP9rFaOtm86TElvXG1Vu1eZRaeQJVc35BqXmClVxGedSYazd/9gt7yfT8dvPz+flLuhmTv/XX7SXjspmX9/KPZdFWH1gLcvp2VkaskxJb1huv1uZRauV5zda0v4J13rNcRnlUW6xuDvRP9tD67aK/y15zUb9urpiTo+ri7ebPftFSt6n57eb5+fkZ3YzJ7331X08up3mLqtp1f27rN7d9XZue3bxirQEl3k2zpdx8OCu6pZuNRY5ultvp9/TgeDf1T0OpvdHWcDga7egbxdpNXc2Wuk3Nezc/0s2Y/N5XX01Rzmw9ptwu39R/ut68iaGXO7fT9bt/vJsbZnfbwa3RcLg1Gt15kHo3V/SvkQeNVXk9w7S5RGvrZskkbKyb+sN11EFtP8dwVP4F1831zk1Y98rLn49GzV2tchnlUWNO3cyq2VK3qdFNSHQ3J5dzzTTvII+e+VNrLfStWgc0854c66b+wBd1q6rC+lbZsI3srWveazvVW9kKtlxGeVRbsG4OdvTjaazm6R2847+lenTTPNWxS5vURXE8vahmS92mNks335n/fqgnjG5GJuvmxHI2dnHqnWQHrQd49I2cGWnvpn4nOe9iJHU8Pa9PfW+mPlR0OH6qeY9u3tT/cGMrrnURdLOqZkvdpta7mx9fPDw5P//0/ZE6/vZjLWJ0MypFNyeVM9vFeUN/aULTdiHLPt1c0wvHV6bqEutmtgZeWyvUf265pnyPbpq/ufUXXmHpu1mv5ozsWlbc3Xz9jdJ9fHusH6s6+VJF7CK6Wb63EZJYzvLKZOt6h+T4NWkNfRNnRlq7aXa52fNumlLrpmnXnfKP5ifU8vR7dPOGXnp3fNW1suTd9FjNft18+fqRUidvj75/ffZSKfWyihjdjJhQzmwX54M1k7EHjveevokzI63dXNELD8dngtak1k2zP1OVsxX0xnVV0UqPbl7RS9WDa45/vWXvptdq9uvm+flrpY5PzvRXz5V6WkWMbkbNXc78+pnm8kGuV6+5hb2w0NrNgZkxo263nvWXSa6b5hEVW+ZmzvvYCUT9upkVWanD265fVEvdzZ//0k7fTOxaVqRuvlPqONuv+a5RSroZtf/ub/4V+xVRyHZxas7taj3ozEh7N80JMvrqjNtjQ7nkumnmaxZz3/V3GJvzrvXp5qXqHMubrXdd6m56Lqddy4rUzaqPH5U6qiJGNyMmVLN2Nsp95yFZPerMSHs3zXZo5t611mMWyXVzsK0fUnawzDS0de2wTzcH68UHg+h5sNvj2+tL3k2v5bRrWZm6m6qKGN2MllzNYhenOnRvU+thZ0Yc3czOkMndbnlfpNdNs22ezXTXu0VaP1C3XzcHg81sx4hxaOZH1C19N5vltMemF0U3mYcUTDUPaVI1iynZ7VuNGT3szIirm4P1nXLzUam9sX156XUzWwc3a5ntc961nt3UpxNUFwSwD65H0M16Oe2R6dFNSIpuTlHN8lRzd2T0qDMjzm4OBqub1ecdjh1cT7CbZu6R/v2k9/46Zqr37qbez1mm05pQFkU3q3Lay6dHNyHJujlNNYvNdOnFqwedGRG6qXfklek8tNY4E+ymOSVLXXbOeddm6aa+3qb557BPu4ykm0U57aXTo5uQ6G5OVc38bBOzRf2g9fjNbN3Ua53XzNtK3WsuTrGbZpbBHbPeaV9UrjBjNweDy+bfsrmL85J8P7mM8qgxt25m5bSXTY9uQvJ701Yzv8BZPovTHsxJY5O7ORisZCtBzQ1TfdE64X5yGeVRbSG7OTDb0Wt6P6fj1KzZu5k98+ZfP+F+chnlUWOO3dTltJdMj25C8t9MWc3Bht6K3s3frq7O6CFnRqbo5mDF9KJ5Zc8J95PLKI9qi9lN81vK7LkYO06Wm72bq/pGdxuLJtxPLqM8asy1m7OYpZvHWbbGuln701zQzYtngma2z8sT1VvoEWdGJvQvYw7ZNyc6TbifXEZ5VFvMbpp5m+KPc/Zutu3M1KW29pPUyGWUR434u/mu7GOzlB/oZopMvMyLtjxRvYX4Rp/Qv0zLzkwzC9x91Ui5jPKotpjdzOd8Oea8a927eXWrMeso+9AM68JWet6Te4KuXEZ51Ii/m/pyHtmlN98opbJLcWqvlFLmtPX5oZsXrh4XYRenc0Br7eZOczPUfGiGNc87P0biIpdRHtUWtJtm7rs0WbZ7N0fq8PZmue/4kvkVZV9H3uT6gSucchnlUSP2br56oa8g9+j0zflL89XJ6RtdsPenz4+UUscvTj/bcQuIbl40c+24sg/uXZx6uTMjrd1U6v6o3J25cs3EwprnnRVkZ/ykwIxcRnlUW9BuZtMX7J9FTZ9umg//vT3aHF4b5acN2R9bZGaOKnUv+wiiO7vNbXa5jM7R7AUzzn6AE8ooj/rVs5vvzzIfzt+VX52fn3/K/3B2VrsiZ3B084Kt6DdZ7Qrvzl2cerEzI45u6pWq3Rvbwyujm9lpQ3v2PO+sIAc3zUcQ7ezea25aymV0juZv3TH2A5TLKI/OxBTMXh2s6dnNpmvWTfJ/pUpz3d9ZRsM52vKNDfsBTiijPOpXz24uFLp5wczGW21Hm3MXp17szIi7mw17Y3/tJddnfhvOMhrO0eZfWbEfoFxGeXQ2ept27ATySvdubpUnLuTutByrXzHTvkp0swXdxBTMDs3GWSuuXZztS3Ot3axdZcJ4cL1lDWtYO389mW5Kc961Lf0ZoS3hM9b04La9dHDp2u2ynfu37Keau3Kr6ut+y/TOxpI656h5qC3GHqD+C9xllEf9opuY0crt3d3d282cXTev+7FjvXqh47TAwWBbj46FYOXKjaqdu+0fWzRYu17r627z2LqzjIZz1HoLl+wHKJdRHp2J3jvhvNDpLNaGw+HQ0cycuclwPMrOMhry6DTkMsqjftFNLIHL+n1qL2wyNxmOHx1yltGQR6cgl1EenYXZvTlerosll1EenYZcRnnUL7qJuMlllEenIJdRHp2Fnlzpnnx1QeQyyqPTkMsoj/pFNxE3uYzy6BTkMsqjM9hcxNXNrIzVPg3r1Hl51GmnuktLGeXRYOgm4qbLuF+9uawTi+RRl43qHvqotlVGedQLM/9/2vDMjyljxTpBQR51Kj5+JWeVUR4Nhm4ibuYwfcU6siSPuhRXaM5ZZZRHZ7Q+HA5H5gxI6WD6BZHLKI86yWWUR4Ohm4ibXEZ51EUuozw6o3Ku4+GU68bzJJdRHnWSyyiPBkM3ETe5jPKoi1xGeXRGRTcXMZsJoZvAEsm6ub+9eBvpSaGbwBLR+zeHRPOi0U0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDd0EwC6oZsA0A3dBIBu6CYAdEM3AaAbugkA3dBNAOiGbgJAN3QTALqhmwDQDd0EgG7oJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDd0EwC6oZsA0A3dBIBu6CYAdEM3AaAbugkA3dBNAOiGbgJAN3QTALqhmwDQDd0EgG7oJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDd0EwC6oZsA0A3dBIBu6CYAdEM3AaAbugkA3dBNAOiGbgJAN3QTALqhmwDQDd0EgG7oJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDd0EwC6oZsA0A3dBIBu6CYAdEM3AaAbugkA3dBNAOiGbgJAN3QTALqhmwDQDd0EgG7oJgB0QzcBoBu6CQDd0E0A6IZuAkA3dBMAuqGbANAN3QSAbugmAHRDNwGgG7oJAN3QTQDohm4CQDe/ncC+ve7mArIfJQAEY3fSZt+ebgJInd1Jm317ugkAAAAAAAAAAAAAAAAAAAAAmCd7nrvNvv2CzntfRPZPDkAk7E7a7NvTzanZPzkAkbA7abNvTzenZv/kAEQihuvILSK6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJxItuhkE3gXjRzTDoJhAvuhkG3QTiRTfDoJtAvOhmGHQTiBfdDINuAvFazm5+eGcvWTR0E4jXEnbz3TdKKfX4R3v5QqGbQLyWr5unupra1x/toQVCN4F4LV03Xyv16On3j004v9iDi4NuAvFatm5+Oj55o///9lgp9cIeXRx0E4jXsnXz5Um+df7hSKkTe3Rx0E0gXsvWzadmbVPT+zk/NwcXCN0E4rVs3fy+/OqDUuqsMbZI6CYQr2XrZs2RUot7RJ1uAvFa6m4eZwfUPzw7Pjv/cnqsHj5dmPnwdBOI1/J2871SZqP9tZ4Gf/bFTIZX6qV9swtCN4F4LW83Xyn1Xv/v1HTzqXr8RE9NUuVxo4tFN4F4LW83n2arm+fnXx4q9f3jT+fn58/0+ZeLMRmebgLxWtpuvldHOpXaiVKPsxlJTxdmS51uAvFa2m4+rgJ5Uk5Ieq+Uelq70cWhm0C8lrWbb9Sz8uuqm+ffKPWoXH6R6CYQryXt5qeHT6r9mLVunip1VC6/SHQTiNdydvPL1ye1Uyxr3XyllCp2e14ougnEazm7+f3D+plCtW6eKXVcG7k4dBOI11J288WRnrlZanbz6/rQhaGbQLyWsZs/Hr1t/Pmkmu3+Kj+J6MLRTSBeS9jNV1U2v7zW/z1R6lW+4LT68mLRTSBey9fNV8rE0nj6g/5vrZuP1eNy8ELRTSBeS9fNH9Xj09zzh9mF5E7Kye5vsnPWFwDdBOK1bN0sP83SeGKWnah8hfPTo4X5yCG6CcRrybrZzKbKPkP9RKlv1POzsx8eHi3Gzk26CURtybr5sthGz2ST3/U8pLfffv3w6eniXP+dbgLxWrJutqrN31wYdBOIF90Mg24C8aKbYdBNIF6RdLN5AtECoJtAvCLp5sIcRy/QTSBeMXTzeFE+HKOGbgLxWvpuvn+jP1To+PXZYnweW4FuAvFa+m6+as7lXBR0E4jX0ndzQdFNIF50Mwy6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJxItuhkE3gXjRzTDoJhAvuhkG3QTiRTfDoJtAvOhmGHQTiBfdDINuAvGim2HQTSBedDMMugnEi26GQTeBeNHNMOgmEC+6GQbdBOJFN8Ogm0C86GYYdBOIF90Mg24C8aKbYdBNIF50Mwy6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJRORS8490Mwy6CcRia1cpdf/marWEboZBN4E4rN5VmYPNchndDINuAnG4q9T93fumnMNiGd0Mg24CUbiu7m4MBoM1vdb5YC1fSDfDoJtAFPZv5V/cUkpdz7+mm2HQTSAG63vFV2sPlCoaSjfDoJtADLaKVczB4KZSu/mXdDMMuglEZlupO/mXdDMMugksoSu3lV7JvKv2bhTHgErXlRrlX9LNMOgmsGzWtveVUoNVPc1dqf0Va/i2UsVpQ3QzDLoJLJsbIz1Nc3Vvb2drp3bwvLCnymNEdDMMugksn8tKqb0d/dW2UvvNsTWl9EROg26GQTeB5bOilMrOplzTa56NsZ1yFhLdDIVuAktI79/MHCq1Xh/ZOCzPFqKbodBNYAlV3dy3unnnsDw7nW6GQjeBJeTs5qa6VvsT3QyDbgJLyNXNy4c3qz/QzVDoJrCEHN1c379dfq3RzTDoJrCE2ru5ev9ucxI83QyDbgJLqLWbK/fuWecO0c0w6CawhNq6uXJ3r5zJuZ59RTfDoJvAElJK5auW+8XZ6I1s5nM46WYYdBNYPquqXMvczz9OaOXuwdVhZnTr8G42SDfDoJvA8tHnp2fT29cOszMuV/fyT7PM5B9pSTfDoJu4CBv5mlGueYJ1JbuZa7S3leZ3v9xl1El+SvJoR5eG9/T1465eHly6qj+GbX9rw8rmYb4RTzfDoJul1eYru7ykjCW7mWu0v0vNb29djFYedZGfkjwaVnblyFLtzMCG7Gau0d7Wm9/dup6QPOokPyV5tKOro8z18qut9fyLXPEJ6nQzDLpZGjZf2cUntNiym7lG+9OfQliz1WXURX5K8mhYU2ZkEbs5HG6PRsPiwsAV+SnJo8HQzTDoZmnKjCxiN9eHm6PR1tC+7veEpySPhjVlRhatm5eu6w3kzK61gi4/JXk0GLoZBt0sTZmRRevmytVbD4rFB9vNdMpPSR4Na6vcojRBcWUkZDerjVrreunuUX2V9Zqbjd0l1VMatTxoeTQYuhkG3SzV9hDpV7YrIyG7uVs9BGtlxjm6ddh4K+9frd+r9pR0gawHLY/Oi5iRkN20F5bco40ftf491biAW0V+0PKoX3QzDLrZRr+yXRkJ2c3iUwjHOUdNdurMhyeM07dzP2h5NKgl6+bhLb1v8/Jmtr1un9aYkx+0POoX3QyDbrbRr2xXRhawm/f1vs214Y1s1bOxxlmSyyiPBiV2sy8zVWD80E3BXUbNPaoebJeb5tvmh936bzKhjPKoX3QzDLrZJkgZzQy+9vUTzVlGwzk6UneuFF9fMnP4ap+SUCOXUR4NKkg3zS+36lN2bO4yau7RYnaPcdOEs/WHLT8ledQvuhkG3WwTpJtmm9OxQ0wqo+EcvVz/G9fNGmfjwrUFuYzyaFDL1M2GVXM4rnXtXn5K8qhfvrv56ezl2Wd7YYLoZpsl6maT2XgsPzy7Ti6jPBrU0nZzcFvfbtteqslPSR71y283P3ytH7t6/M4eSA7dbLO03bykv8ehvVSTyyiPBrW83TS/pO7YSzX5Kcmjfnnt5qsjk02l1Kk9lBq62WZpu6k/FFaptjMm5TLKo0H17ubl4Wh099ZodL1lp/FcurnlfJnIT0ke9ctnNz8eqUcvTp8/0o//jT2YGLrZxvmGmGBtuDW6qadZXm05ljuXbu673pRyGeXRHvTjHd/3p38E9jyptm42T65p7d9W/ToW9++Uvyqum/mo5tvvVfNTremwchnl0cp1fbvmx/nk9EDbP0JGHvXLZze/Pja1/PJcKfUw8Z2cKXUzezc23szmTVsejy7ppVZGrJNr2vq3frM2B/1wt8zcRvbWNUnbqd7K1lkqchnl0cqB/iYt0Z5QRnm0hw39OOy/0Sy0D0D36uZGeYpUrjyByvyUxzVPv5LLKI9Wbujbtf6j6AF3GeXRcT/7hb1keh67+fHoff7V90qpt9ZoYmLp5t/4G/aScWvmzVY/x+OyDl3L21LfrnM3s3kplfK8ZrM9N846K1ouozxaWjF/s71Uk8soj/Zh0mftMNAHUsb2B/bp5rqdzQvppnPdfkIZ5VHbz37RUrepeezmq+fFV5+OlfqhOZiaWLr5X371e5PLmbWvOsdjRZ9vvD++d6xXN83aR91FdNN8q/xS301yGeXRPq7qR9LciNVX2LVT2t7N8mTuHT041k3z76Ye3NBXxlwdDrfvHlxEN6/om923lxp6xF1GebRJV7OlblPz2M2Xn8ovv1HqWWMsOfF086spymneo1V/TOraLkurl1sZqU7mNjvWxrqZxfHupt4M3Rhu3ty7kG6as//Gditqchnl0V50wA4bG+U6guNzpNq6WTIJG+um+R1WfZaO/olbW//zOC5kftbWzpac9JQmjdZl1Wyp29Rm6OYXM9voy9nHZjG058kfUY+pm1OUs3G+s3lztcZIDzgzYo45jHXT/M31tZpVO8hzOC5kVoHs60Vm5DLKo72YoyY3agtW9Mb1eNN7dNP81WMrrnVz6OY1fat79tKM9JQmjVaKarbUbWq9u/nh2fHJ+fn7b/V0zbFyfs/+zai6ObGc2S7O7EzEFb1GtNeyld6rm/qAjPuNqoXvpnlGjrekXEZ5tJcV/RN5UPvx6tq1NL1HN/V+0gN7YUP4bl7ST+/Q8c8pPaVJo4Wqmi11m1rPbr7SE9xPzl9nEzZPvljVeKweWktSE1s3J5XTrJFlidDHcQ7bDj336aaZcN6+0VYI301zZKr1LMtJZZRH+zH7Jq2LV7b8hHp284LXN9fNr6jG+eo10lOaNJqpV3NGdi0r7m6+PvtaqZM3Ry/efdGT3V82o/F5bElyfr/sTTzEcpp3s06QKWjL+1jTQ86MuLs5dqy4IXg3TYHaV6AnlVEe7WfNPJzyj/pAUX31s9Cjm+ZEnX17P0hd6G5mn4Lm/LQS6SlNGtU8VrNfN8/P3yh19MhMPHqh1JNmNF6rR/YaaGpi7KZYzpXswolDc1UGVyr0LVxj7d3MTtTZaelCKXQ3zeGnxtGSOrmM8mhPd/QDKndots1513p008wDVeq2a3UveDcnZHNCGeVRz9Xs2813Sh1nB9Df6y32ui8Pkz9dKNJuSuVcN1PDH+g3tety3X26aSKh9kdjA6XA3ZSzOaGM8mhP+jO+y3Vw3brm4fVcj26WU2UPbjnuGLabk7I5oYzy6GDw81/a6ZuJXcuK1M2PZS0/KnXUaMZL9X3jzymKtZtf/Vd/zX5FFMzMQsP5yteDzoy0dzO7hJtO17W2OgTv5oRsTiijPNqXyUu+H1Lvk2w9J7FPN1erifEPbrbt6AzazRX93Q/HZwZUpKc0aVTzWk67lpWpu6nqyfh0/HXqW+nRdtNdzXIXp+NtbOhRZ0bauznYrE6y3N1q61fQbpq9tXfbvm1OLqM82temflDZcar2Oe9an24OBjfMVkP+4x5PWNBu6l8Bh+Mn59ZIT2nSaMZjOe1aVvp188nDsXlJ6Ymym2I1y12cD9yVMe9Ge2HB0c3BRvURsergxvhKZ8hubugs3ZX2rspllEf7MjM2s41z/buq9Tymnt0crF6vnRl0z/5ph+ymfipyNieUUR4t1Mtpj03PfzefH3H1zRjnIU2qZrkvsv3zJAw97MyIq5uDwWUzQSZzeM0eDdhNs89WzOaEMsqjvZkJ6vrKvo4571rPbupfFjtlOh9Yq7IBu2kO5svZnFBGebRSldMemZ73br48SnzGeya6bk6uZvZuFkMhjrq7ORisbmVN1uyJlOG6uab7sStmc0IZ5dHezNa5nnykf+Tjp1ga/btp0plf4cP6y8N10+x7cP5L5KSnNGm0riinvXx6vrv5Rr0qv05ZZN2coprZRZAM58tfDzozInXTpPNu/tdb61fBurmij78Ia8+GXEZ5tD+zK3nLOeddm6mb+jBfVs7m6n2wbpoXz8SflPSUJo02ZeW0l07PczffHpFNI6puTlPN7GI6D/JZnPZgTo853xwTuqlXs8xN1IPm0mDdNKu4rqdSkMsoj/ZnZlruOee8a7N2c7Bqro7UnBo64X5SGcVR8+I5mPAralIZ5VGbLqe9bHp+u/n2qDpP6EXSVy6OqJtTVTPP3rB+ovo4PebMyORu5hd9UM0DTxPuJ5VRHDUzkOoX0Ggll1EenUHWdP0rw/HoZ+9mNk+0edBpwv2EMsqj5sE6VpxrpKc0aXTcz39pL5neLN08zhJRdfPtUXUVpBdfl1+mKJpuTlnNrDKj4nqajlYIQxP7lzHb6s0zASfcTyijOGp+A7hW5ipyGeXRGZjJsno/Quucd232bq7qGzXPcTXneLrnmQllFEcv6a30+xN/1hPKKI/61bub78pa6m6aCZtvj05OM8+fPFQ/NjqSmli6OS3zyjeFMO9XR4tm76bZsdc8yGtOcmm/jojmLqPmHjUPxzmDvySXUR6dRfExQPZRstLs3TRttk7h1BMMHAeixDJq7lGzq2Xy6uaEMsqjfvXu5g9KqWzC0av8UzHyiyPljqqrGKcosW6aqZv51nl2zknrC1gPODMyVTdNLprb6eYwfvtcHM1dRs05atabJ69uTiijPDqLYvJC65x3rXs3t29v1p/vRtvV88z+67GpYAV3GTXnaLb3xbXiXNPygGrkUb96dvPVcx3Jh6dvzl9+e6yUOn725k3+D5n7xi5JWhLrplkNzCffCbs49YAzI63dvD9qrEma72P9DdnnKjgn2zvLaLhGs0tuOlfmKnIZ5dFZmJmb9mZ0XfdujpQ6vHU1/0GuZ2cO2RcQznJ9o/hnWmnuMnGW0XCOmgNQh7sNenbqGOkpTRr1q2c3359lPpy/K776mH+RS/ycobS62dyic+/idC03Wrupk3i9WKfazFZlrcnRWUH2yjXOS81iu8qYcY2a6YTqfvO93ParQC6jPDqT7HOX3BPFe3Uz+5e7s7Obn6N1YO//MDNH9W12d27t3rcvmOwso+EcbfvsIvvBGXrA9ZQmjfrVs5uYIKlurulVk+pj2dy7OPViZ0Zc3dT2d3fu7OZTscdWAvPz4vd374x2dw/tnZKuMmZco62fXWQ/OE0uozw6E1Mw967GGbpZuT++F8D6wdDNFnSzt6S6qVcDG9eOc+3i1EudGZG6WTM+Myj7GMZKGt00W7fuK2X26ObwZvMHeb/1qNhm7cofdLMV3ewtpW6ad2jjwIxrF6de6sxIazdHd6vLIemdYLfsG2irxZlEmTS6Kc1514b6M0LbHrG2qgdbjqWtbd7c1ev1h7u7bcPGytbtbCt+d/fuqHkQ3FlGwzl6vfxM00rrd9d/gbuM8qhfdDOMhLq5ol/m1qrJZfPaH9v51nLLylU92nJ45/L2XbO77f7ure2xEucu3ci24vd3d2+OmhuXrjJmXKMbzXdxpuXBTSijPDoTPbNgiqk7c+UsoyGPTkMuozzqF90MI6FuLjhXGTPy6BTkMsqjs9Crm8457xdFLqM8Og25jPKoX3QzDLq5KOQyyqNTkMsoj87ATCJo+1ihCyWXUR6dhlxGedQvuhkG3VwUchnl0SnIZZRHZ2A+bHnRVjezMlasT3WXR52qz+4wrDLKo8HQzTDo5qIwh5sq1u5VedQlm6Fassooj/qwaiZvtk4Nv1ByGeVRJ7mM8mgwdDMMurko5DLKoy5yGeXRGQ1Ho5t6kqpS+8LB9Asil1EedZLLKI8GQzfDoJuLQi6jPOoil1EenVE5OX3fNcfoAq01z6+yLpwkjzrtNO9mTcWXR4Ohm2HQzUWx3XxjWXOj5FGXjea9rOMz8uiMim7utk2KwrzQzTDoJoLQ3Xywe9M+bxzzRTfDoJtAvOhmGHQTiBfdDINuAvGim2HQTSBedDMMugnEi26GQTeBeNHNMOgmEC+6GQbdBOJFN8Ogm0C86GYYdBOIF90Mg24C8aKbYdBNIF50Mwy6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJxItuhkE3gXjRzTDoJhAvuhkG3QTiRTfDoJtAvOhmGHQTiBfdDINuAvGim2HQTSBedDMMugnEi26GQTeBeNHNMOgmEC+6GQbdBOJFN8Ogm0C86GYYdBOIF90Mg24C8aKbYdBNIF50Mwy6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJxItuhkE3gXjRzTDoJhAvuhkG3QTiRTfDoJtAvOhmGHQTiBfdDINuAvGim2HQTSBedDMMugnEi26GQTeBeNHNMOgmEC+6GQbdBOJFN8Ogm0C86GYYdBOIF90Mg24C8aKbYdBNIF50Mwy6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJxItuhkE3gXjRzTDoJhAvuhkG3QTiRTfDoJtAvOhmGHQTiBfdDINuAvGim2HQTSBedDMMugnEi26GQTeBeNHNMOgmEC+6GQbdBOJFN8Ogm0C86GYYdBOIF90Mg24C8aKbYdBNIF50Mwy6CcSLboZBN4F40c0w6CYQL7oZBt0E4kU3w6CbQLzoZhh0E4gX3QyDbgLxopth0E0gXnQzDLoJxItuhkE3gXjRzTDoJhAvuhkG3QTiRTfDoJtAvOhmGHQTiBfdDINuAvGim2HQTSBedDMMugnEi26GQTeBeNHNMOgmEC+6GQbdBOJFN8Ogm0C86GYYdBOIF90Mg24C8frtBPbtdTcxFfsnByASdidt9u3p5tTsnxyASNidtNm3p5tTs39yAAAAAAAAAAAAAAAAQLTseUc2+/bMQ1pq9r8mgB7sTtrs29PNpWb/awLowe6kzb493Vxq9r8mgB64rkc66CbgB91MB90E/KCb6aCbgB90Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4kXQ3P5+9fHn2xV4aLboJ+JFyN398qJRSRz/ay2NFNwE/Eu7mM11N7Zk9Eim6CfiRbjd/OHp29uXshQ7nW3ssTnQT8CPZbn56eGb+f6aU+tYejBPdBPxItpsv3uRffK/UI2ssUnQT8CPZbpZeK/XEXhYnugn4QTfPlHppL4sT3QT8oJtv1Uk1hfOD/vLT2cfGLWJBNwE/6ObTo3f5V59//Fp9PH//VCn18JV1qxjQTcCP5Lt5dpTPQnr3/ZFS6uP742gnddJNwI/Uu/nm+Ot8o/zt2XOl1PuHj56fPtHhLI63x4NuAn4k3c0vr/U2+dEPxZ+VUk9e6C9eKlXf6xkJugn4kXQ3n55k2+Sn+Z9Pyi91T6M7b51uAn4k3c3z80+vzbU93md/OlEq32h/r5T6vnHLCNBNwI/Eu3l+/lnv1XyafV118/yJUl/XbxYDugn4kXw3TSKPs69q3Xym1MP6jWJANwE/6Ob5O6XUZ/NVrZs/lDGNB90E/KCb5+dHSmXHzmvdfMV2OgAHuqk31PMLItW6+SPHhQA40E096ag6LlScc/lCqXJaZyzoJuAH3Tw/f1ScG3SiVHYx4/Pzb8vJSfGgm4AfdPP8bbG6qbuZF/TLQ/W8fpso0E3Aj2S7+ebbH7ODQR8fHhc7NU/KnZov1cNP1W0jQTcBP1Lt5ucjpR6++HD+8cfjkw/FQn3apbmA3NnxUXyX9aCbgCepdlPPdjeOT7O5m9qJUs+PnpyePlWPy5ZGhG4CfiTbzfO3p6enpz80Dv7oeUifXj775vQsumshaXQT8CPdbraozd+MEd0E/KCbNXQTwBToZg3dBDAFullzEuFk9xq6CfhBN2seVucLxYhuAn7QzconpdRLe2FE6CbgB90svHyup70fvSg+bCg+dBPwg24W3p3l7IFo0E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4QTfTQTcBP+hmOugm4AfdTAfdBPygm+mgm4AfdDMddBPwg26mg24CftDNdNBNwA+6mQ66CfhBN9NBNwE/6GY66CbgB91MB90E/KCb6aCbgB90Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4QTfTQTcBP+hmOugm4AfdTAfdBPygm+mgm4AfdDMddBPwg26mg24CftDNdNBNoJ/V4Vrjz3QzHXQT6OPaA6XUwc3VagndTAfdBLpb2VWZ+5fKZXQzHXQT6O62urU5HOlVzr1yGd1MB90EOrv6YEP/b1WvdV4pFtLNdNBNoLN7+db5+qFS28VCupkOugl0Vu7U3FXqevE13UwH3QT6u6WU2WLX6GY66CbQ3z11p/yabqaDbgITbN5Vg8HKtT11f2e9ObJy+KCa+04300E3Acn6DT3baLB2z0zX3G+eIrR1UG6l082U0E1Acm2ki7m+v7c9vH6o1E597OpheVCIbiaFbgKyy3o90wTyulL71fIrt5VSd6std7qZDroJyFaUUkPz1apSqthQv6I333VRy3DSzXTQTWACvX8zc6hUtX55+brZ51meaEk300E3gQmqbu7Xu6l3fh4opa7mf6Cb6aCbwATubg6GSqmb+dd0Mx10E5hA6ObgtlJ38y/pZjroJjCB1M0tupkiuhm/nd2G2kzthuxmrtHe1prf/XaXUSf5Kcmj3UndXK+mdNLNdFxQNzear+zGZOKa7Gau0f62m9++vILiNKMu8lOSR8MqLk2ey6bUjMtu5hrtbb353WvzHyeP6rAOh7WPoijIT0ke7U7q5kCpzfwrupmOC+qm3p1es2uP57KbuUb7u9X89ltdRvUElGHLKoz8lOTRsKbMyMJ1c2P7br743p1OZZRHu5O6uaEOihmddDMddHO8jMLo6ubN/Wzpg91Rcz1IfkryaFjVZqt57K6MhOxmtaZtbYkLo8367TYeWG1LvOVBy6PdKaXyf+v92mXjMiOuv5miC+pmbbPVvCns8VzIbu5XD8HaEnePNut30Chn7SnpPFkPWh6dl5GUkZDdtBeWhFFrrbGcJmmRH7Q8Op01fX569uV+/rddvZavZF4+vFfejm6m44K6WaNf2a6MhOzmyF5Yco9aa43q3op9C0Pnyf2g5dGglq6be7s3RqOb980jO7D3LGbkBy2PTkf/q2e/PNcOs82Pq0od3tAPZ+twr/rdSTfTQTfHuUf14znYvT0aje4emofWfnxHLqM8GpTYzY2h1nIQZjZCGeXR3f1RUUpzWo7jhyY9pUmj07h0ZU9vf2xdHlwy51UebG/kr8v799TBqPabk26mY7G7uWreyi0HYWbkLqPmHh2q28XB0/XsmEXre1IuozwalNjNvswuiPLDycYIZZRH66uXm+aH3dp0+SnJo9O4OspcL7/aGgyGt/WTvrXZ2N6gm+lY7G72Zo4MNC8xW+cuo+YeXa29c1f0akj7CqdcRnk0qCDdNCtft+ylJaGME0cr5rdU6yN3DhjyqF90Mx2RdtPsq2vfH6a5y6jJoyV9Wcb2Ry6XUR4Nanm7ua1vV79IcEl+SvKoX3QzHXRznDxa0bs4D+yFmlxGeTSo5e3mVX271n8U+SnJo37RzXTQzXHyaEVvqB/aCzW5jPJoULN0U+9pbp0+MJdubunbFfuWG+SnJI/6RTfTsdTdXB8Oh5fshcZcuqknYpYXra2TyyiP9mB25o4dPNNni9pHa9q62TyZ276HsZpdoFfbvzu6Wu43vmwO213Xy++aLzPN/cpyGeXRyo6+3WV7qdbylGrkUb/oZjoCdXPFHG/cbZTril4yPnm5pZvWydytx3cu384/p0Cp3ZvXy3fUWvbWNcdsNqu3svWOk8soj5b0hybUPj27Ri6jPNqD2YYtLgJZ0FMNx4rR1s3m9PKW9caVG2YWUKU8gSo/dcrWPP1KLqM8WtHhbv0dNaGM8ui4n/3CXjI9upmOPt38q3/rr9qLxmQz3Orzwld15/bGt/T07ayMWNPLW9Ybh9bJJOV5zWZ7bpx1VrRcRnm0dEX/xeO/ByaWUR7tQ/9kD63fLvq7jIWmVzeLk8RLF9BN88/a+rOeUEZ51PazX7TUbWp0Mx19uvnXvvrvJ5fTvEXr03T0h/8dtmxV65t17eYwm3VeuYBuruizWMbKZMhllEf7MFvKzS3sFd3Ssf2Bbd0st9PNtvh4N80Wstq/MbpybTS6q5/0/Lu5rtd4i8tcWvRf4C6jPNqkq9lSt6nRzXT06+ZXU5QzW48p1xHMzOW2iSR6uXM73WyLj3XTvI2Uuj26dmU0url7eCHd1D05bH9LymWUR/tY1b9GHjRW5a+NLdHaulkyCRvr5iW99KC6z+rVG+UJ+9fNNHD941J7+ZxwrbmrVS6jPJq7arI59mwy0lOaNFqXVbOlblPz3c33Zz+cfbEXYiH07ebkcq6Z5hUnFZs/tdZC36p1QDPvybFu6lVXdauag75xvVyv3cjeumZNaKd6K1vBlssoj2bWzOqz49Kcchnl0V7MOmFjNU/v4B3/LdWjm+YXkeN5ZgIeT9e7prd3zD/mLUc2J5RRHq0U1Wyp29T8dvPjU/3Y1Tef7QEsgP7dnFjOxi5OvZOs/cIM+kbOjLR3c/IVhcIdT9fH8DdHd/Tfv+96Q8pllEd7MSuF9X0Get+rvcezXzd1kg9czTICdtO8gsyrqPVQuiE9pUmjhaqaLXWbmtdufjzOn/rDD/YQLt4s3ZxUzmwX5w39pVlrGb8AsKZHnBlp7aY5kD2+MlUXrpvZk9JZql/SoUkuozzaj+l4rQ/6zy2ngPbopjkqNF7gmnl0s3n1zQbpKU0azdSrOSO7lpWO3fx0cvLqw8c3j/Qapz2Gi/f7ZQP7EctZXpnM7JBsnbLTp5vmBEd73k3THLrZvPpmg1xGebQfc2y/+gFvOJ5+j26aXQB3nL8i5tRNpfZcD1t6SpNGNY/V9NjN59n2+ZcnSilWOBfPrN0Uy5nt4nywZjL2wLHSom/izEhrN836puOQTG4O3VTqcMeRE7mM8mhPZsJq+YR17Np+TfXoZnag7X77toIRsJvD4fDKaCe7/Oah4yFIT2nSqOdq+uvmx6/zA0IflVKv7VFcuNm7KZUzv36mPrjrPLZgbmEvLLR2M5//cnNseSVcN/X+zWujO9lEqHvtq5xyGeXRnkzeii1zM+e9bY9gj25mRVbqwU3X/QJ2M3c1ewzt4ZSe0qTRweDnv7TTNxO7lpVu3TwvjwY9UupdcwgLwEc3v/pv/wv7FVGo1s6cbyw96MxIezfNCTImyI512IDdzK3tmHLWrvZdI5dRHu3JzNc8zB+NvnhQ68zSPt3cKM8W2t9pmX47j27mewsOW/9Bpac0aVTzWk67lpWO3Sx9rR4yF2nxeOimu5q1s1H2HZu0vbqZLTbubLX+xcG7WUwibd3NKpdRHu3LJDE7WGYa2npyTZ9uDtbzNU7t/rXxH/c8urliJuW37XqYUEZ5NOOxnHYtK3I3v5h1yi9nH5vvzvPzL0fqR3sZLt7M3RSrWezilF67etSZEUc3szNkMoe3xi5pMZdu5mu9Ld98Qhnl0b7MtvkD86XeZs++svXq5mCwWV7WQ39MhD06j25mt1Nt67vSU5o0WqiX0x6bXu9ufnh2fHJ+/v5bpdRjq5xn6mlzARbCbPOQJlVzMBjcMC/46kP/xuhhZ0Zc3Rys79QuNrE79n6aRzezB2d9rq0hl1Ee7c08GrOW2T7nXevZTX06QXZwRrtj7ZuYSzezfdpjJ45OLKM8WqnKaY9Mr2c3X32tlDo5f31kfronza3yb75hK30RzdTNydUcXM7PJG9/H2t61JkRZzf1R5nfLs9SP7C3SufSTXMs5r69dGIZ5dHezNwj/ftJd+xwfHNa691NPbe+TKf1q2I+3TQzVMfWdSeWUR6tK8ppL59ez26+PvtaqZM3Ry/efXl1pNTL2rvzy7fqVe2PWBgzdHOKag5Wi0s/HLYd3jX0qDMjQjf1Xq8ynYfW5vJcumlK1XbhYrmM8mh/5jlvOOe8a7N0U/8SNPGy/4b5dNM89LbvMv6A6uTRpqyc9tLp9ezm+fkbpY4evddfvVDqSfne/PDipGXLHYugdzenqWZ+JrnZot5vPfI8WzfNJXWzHajW3zCXbpqH3vZd5DLKo/2Z/a13snMuHfMMZuzmYHDF/J4yp4CVzDd0308uozxaY46ot30X6SlNGrXpctrLpte7m++UOv5kvnqvt9hzbx6b15c6IZyLp2c3p6tmtiU7ymZxth4Mnbmbg8FqthLU3DA1vXbfTy6jPFox8+/bvotcRnl0Bnrd/nDNNeddm7mb2b9oc0N9wv3kMsqjNeZ8z2awM9JTmjQ67ue/tJdMr3c3P5a1/KjUUfXm/HJmru3BkaHF06ubU1ZzcEmvnezmb1fXLk495MzIFN3MLoRpHWqdcD+5jPJoxZzvaQXbkMsoj87ATDIwey7aDvJrs3dzTd+oeSXMCfeTyyiP1pjNiraZ79JTmjTql59uqsb78+1DpZTZhMci6dPNaZmgmdMrzWazYxenHnJmZEL/Mjf1jZp/+YT7yWWURyvmNCjryp6GXEZ5dAYrxXEy5+yF2bvZtjNTf1vnt5xQRnm0Yn7WrbsfpKc0adSvEN08f6uah4qwEEJ20+ySMi/abBZn+y5OPeLMyIT+ZVp2ZpqP23ad2TmpjPJoacUc82qb+C6XUR6dRXZpdsecd617N4fNv2vFbC5bq33mcz1dq7gTyiiPltbNr4TW3Q/SU5o06leQbp4/Ueq5tQgXLmA3zXGKfI+UsItTDzgz0trN680F5liFtdpnvnfb1MqMXEZ5tGRWc1s3ieUyyqOzMBEa+1nUdO/mSB3cqu6wbrJ5YP3+Mz+I/bYfhCaX0T26fq36Z76STYFq/RbSU5o06leYbp4q9cJahAsXrptr+jB6+cFs7l2cerkzI63dVGqvdmL6llkVsTpndsO1HkYw5DK6R7eqVdjVbOWu9VeBXEZ5dCbZIbK2n3KmTzf1vpbdG9v6ykT5J7TZexnNfCyl7m6bSzrv7LYcNmosqXOPDpW6v6M/iPTSFXOUr3325qQyyqN+henmGRdEWkDhuqm3nmtXeHfu4tTLnRlxdFMX+fZoczi8tpNNQ7pvH53JCvJgR38W8Pbozm5zm91dRs09uqsO72wN1wYrw2vZ991v2+M2oYzy6EzMav34xwqVenazaTxf5l+p0lzfdZdRc49mmyg17f8kE8ooj/oVppvvOS60gIJ107zhajvHnLs49WJnRtzdbLhv3yQ7lF/TXEdyl1FzjxZXKSnsj31fQy6jPDobvcvVMedd697Nrfz6AqW7LXdfbX5UcJBu7rZupE8sozzqV5hu/qgeW0tw8UJ107zqG8dMsstgjG/XmjeFvbDQ2s3aVSaMB21XXt+snb8eqJsH2441O7mM8uhM9BZzy8cKlbb0Z4S6ArSmB8dXJi9du122c//W2JUAMsWmtLmRn+30jfo/8577GJ8edpdRHvVrlm4eZ2/H8W5+eczq5gIK1c1bu7u71qcrjMwn+469iPVC5yrSth4dC8HKlRvVm2q3/Upyg7Xt2sd7e9pOz/cKGIc7LbXOyGWUR2ei9064j4bNYE1/sqT9+6tJX9B5OByPsruMmjh6+fpodEfvj7EH6vRf4L6BPOpX726+K2upu6kv5PH52Yu8li84mr6IQnVzDi7r96m9sMm8lYfjfXOXUZNG166ORjv6MIkUEbmM8ugszAGa8XJdLLGME0anIZdRHvWrdzd/UMVF3V8ppd5m56mrp+/Pz8++4WD6Qlribs5AKuOk0SnIZZRHZ6FXN8P8zTOQyyiPTkMuozzqV89uvnquryD38PTN+ctv9Yf/Hj97o6/0kXlyZr9jsQjo5jh5dApyGeXRGWzOMxJTM2U0u2gMazeCPOq0U92l5UnLo8H07Ob7s8yH83flV+cffjh98v3pq+xqH1g46XZzv3pzWQcd5FGXjeoeeseqVUZ51IsNPYVg/LjbRTNlrFiT8uVRJ2tig1VGeTSYnt3EEkq3mzXWRG551MWeN9NldEb6kMx1M2O1/aPLLpRcRnnUSS6jPBoM3UwH3RwvozzqIpdRHp1RNTl9ysc6T3IZ5VEnuYzyaDB0Mx10c7w28qiLXEZ5dEZFNw+n3KWAIOhmOtLsZmSybj64sXgb6Umhm+mgmxEYjkZXJ01lRXB0Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4QTfTQTcBP+hmOugm4AfdTAfdBPygm+mgm4AfdDMddBPwg26mg24CftDNdNBNwA+6mQ66CfhBN9NBNwE/6GY66CbgB91MB90E/KCb6aCbgB90Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4QTfTQTcBP+hmOugm4AfdTAfdBPygm+mgm4AfdDMddBPwg26mg24CftDNdNBNwA+6mQ66CfhBN9NBNwE/6GY66CbgB91MB90E/KCb6aCbgB90Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4QTfTQTcBP+hmOugm4AfdTAfdBPygm+mgm4AfdDMddBPwg26mg24CftDNdNBNwA+6mQ66CfhBN9NBNwE/6GY66CbgB91MB90E/KCb6aCbgB90Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn7QzXTQTcAPupkOugn4QTfTQTcBP+hmOugm4AfdTAfdBPygm+mgm4AfdDMddBPwg26mg24CftDNdNBNwA+6mQ66CfhBN9NBNwE/6GY66CbgB91MB90E/KCb6aCbgB90Mx10E/CDbqaDbgJ+0M100E3AD7qZDroJ+EE300E3AT/oZjroJuAH3UwH3QT8oJvpoJuAH3QzHXQT8INupoNuAn78dgL79rqbWFr2vyaAHuxO2uzb082lZv9rAujB7qTNvj3dXGr2vyYWyv8PkLMAMgFH2I4AAAAASUVORK5CYII=" alt="多階段實驗資料儲存方式" width="70%" />
+<p class="caption">
+多階段實驗資料儲存方式
+</p>
+</div>
+<p>以下使用內建測試函數生成資料作為範例。解釋變數由
+<strong>SFDesign</strong> 套件生成 maximum projection (MaxPro) Latin
+hypercube design，再將解數變數輸入<code>testfunction.R</code>中的
+Rastrigin
+函數取得反應變數。為模擬多階段實驗的資料結構，此範例產生至多<strong>三個階段</strong>的
+<span class="math inline">\(p=2\)</span> 因子實驗數據，每階段各 10
+筆資料。</p>
 <pre class="r"><code>source(&#39;R/testfunction.R&#39;)
 library(SFDesign)</code></pre>
-<pre class="r"><code>p_data &lt;- c(1, 2, 3)
-n_train &lt;- c(10, 10, 10)
-n_test &lt;- c(3, 3, 3)</code></pre>
-<pre class="r"><code>xList &lt;- lapply(1:length(p_data), function(k) {
+<pre class="r"><code>### 設定各階段資料維度
+p_data &lt;- c(2, 4, 6)     # 各階段實驗的因子數
+n_train &lt;- c(10, 10, 10) # 訓練資料各階段實驗的樣本數
+
+### 使用 maxproLHD 產生測試資料的解釋變數
+xList &lt;- lapply(1:length(p_data), function(k) {
   maxproLHD(n_train[k], p_data[k])$design
 })
 
+### 以 Rastrigin 函數產生訓練資料各階段模擬資料的反應變數 
 yList &lt;- lapply(1:length(p_data), function(k) {
   tmp &lt;- numeric(nrow(xList[[k]]))
   for (i in 1:nrow(xList[[k]])) {
@@ -1530,9 +1573,16 @@ yList &lt;- lapply(1:length(p_data), function(k) {
   }
   tmp
 })</code></pre>
-<pre class="r"><code>x0List &lt;- lapply(1:length(p_data), function(k) {
+<p>為說明後續模型函數的使用方法，再產生一組每階段各 3 筆的測試資料。</p>
+<pre class="r"><code>### 測試資料各階段實驗的樣本數
+n_test &lt;- c(3, 3, 3) 
+
+### 使用 maxproLHD 產生測試資料的解釋變數
+x0List &lt;- lapply(1:length(p_data), function(k) {
   maxproLHD(n_test[k], p_data[k])$design
 })
+
+### 以 Rastrigin 函數產生測試資料各階段模擬資料的反應變數 
 y0List &lt;- lapply(1:length(p_data), function(k) {
   tmp &lt;- numeric(nrow(x0List[[k]]))
   for (i in 1:nrow(x0List[[k]])) {
@@ -1543,22 +1593,61 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
 </div>
 <div id="gaussian-process-modelling" class="section level1">
 <h1>Gaussian Process Modelling</h1>
-<p>Gaussian Process Suppose <span class="math inline">\(y_i\)</span> is
-a real value, <span class="math inline">\(Y = (y_1, \ldots, y_n) \sim
-MVN(\mu, \sigma^2\Psi)\)</span>, <span class="math inline">\(\mu =
-(\mu(x_1), \ldots, \mu(x_n))^\top\)</span> and <span class="math inline">\(\sigma^2\in \mathbb{R}\)</span>, <span class="math inline">\(\Psi\in \mathbb{R}^{n\times n}\)</span></p>
+<p>給定 <span class="math inline">\(n\)</span> 筆資料為 <span class="math inline">\(\{y_i, \mathbf{x}_i\}\)</span>，<span class="math inline">\(i=1,\ldots,n\)</span>，其中 <span class="math inline">\(y_i\)</span> 為實值解釋變數，<span class="math inline">\(\mathbf{x}_i\)</span> 為解釋變數向量。 首先說明 GP
+模型基礎框架：</p>
+<p><span class="math display">\[Y = (y_1, \ldots, y_n) \sim
+MVN\left(\boldsymbol\mu, \sigma^2\Psi\right)\]</span> 其中 <span class="math inline">\(\boldsymbol\mu = \left(\mu(x_1), \ldots,
+\mu(x_n)\right)^\top\)</span> 為反應變數之期望值，<span class="math inline">\(\sigma^2\in \mathbb{R}\)</span> 為變異數且 <span class="math inline">\(\Psi\in \mathbb{R}^{n\times n}\)</span> 描述
+資料點之間的關聯性。一般而言，當解釋變數 <span class="math inline">\(\mathbf{x}_i\)</span>
+為數值型且每筆資料解釋變數維度相等時，<span class="math inline">\(\mathbf{x}_i=(x_1, x_2, \ldots,
+x_p)^\top\)</span>， 資料 <span class="math inline">\(Y(s)\)</span> 與
+<span class="math inline">\(Y(t)\)</span>
+之間的相關性常以高斯核函數（kernel function）表示： <span class="math display">\[
+\Psi_{st} = \text{corr}\left(Y(s), Y(t)\right) =
+\exp\left(-\sum_{j=1}^p \theta_j (x_{js} - x_{jt})^2\right)
+\]</span> 其中，<span class="math inline">\(\theta_j\)</span>，<span class="math inline">\(j=1,\ldots,p\)</span> 為模型參數。</p>
+<p>此模組提出數種針對多階段實驗資料的 Gaussian
+Process（GP）建構方式。考慮資料中多階段實驗的最多階段數為 <span class="math inline">\(Z\)</span>，因不同階段數的實驗因子量不同，將上述
+<span class="math inline">\(n\)</span>
+筆資料加上輔助用的隱藏變數，階段數標記 <span class="math inline">\(z\)</span>，改寫為 <span class="math inline">\(\left\{y^{(z)}_i,
+\mathbf{x}^{(z)}_i\right\}\)</span>，<span class="math inline">\(i=1,\ldots,n_z\)</span>，<span class="math inline">\(z=1,\ldots,Z\)</span> 且 <span class="math inline">\(\sum_{z=1}^Z n_z =
+n\)</span>。在此，解釋變數為數值型，但當兩資料來自不同階段數的實驗時，解釋變數維度則不相同，如何在此情況下描述兩兩資料間的相關性即為本模組之關鍵，以下小節分別說明提出之相關性核函數構想與實作方式。</p>
 <div id="additive-correlation-structure-with-interaction-kernel" class="section level2">
 <h2>Additive Correlation Structure with Interaction Kernel</h2>
-<p>輔助變數 <span class="math inline">\(Z\)</span> 表示階數</p>
-<p><span class="math display">\[
-\Psi_{st} =  \sum_{z=1}^{\min{\{z_s, z_t\}}} \sigma_z^2
+<p>本節考慮於連加相關結構中加入交互作用描述來自不同階段數的兩筆實驗資料
+<span class="math inline">\(Y(s)\)</span> 與 <span class="math inline">\(Y(t)\)</span> 間的相關性 <span class="math display">\[
+\begin{align*}
+\Psi_{st} &amp; =  \sum_{z=1}^{\min{\{z_s, z_t\}}} \sigma_z^2
 \exp{\left\{
-    -  \sum_{j=1}^d {
+    -  \sum_{j=1}^p {
         \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
     }
+\right\}} \\
+&amp; + \sum_{v=1}^{\min{\{z_s, z_t\}}}\sum_{u=1, u\neq v}^{v}
+\sigma_{u, v}^2
+\exp{\left\{
+    -  \sum_{j=1}^p {
+        \theta^{(v)}_j \left(x^{(v)}_{js} - x^{(v)}_{jt}\right)^2
+    }
 \right\}}
-\]</span></p>
+\exp{\left\{
+    -  \sum_{j=1}^p {
+        \theta^{(u)}_j \left(x^{(u)}_{js} - x^{(u)}_{jt}\right)^2
+    }
+\right\}}
+\end{align*}
+\]</span> 在此模型考量下，模型參數包含期望值 <span class="math inline">\(\mu\)</span>、各項相關結構之變異數 <span class="math inline">\(\sigma_z^2\)</span>，<span class="math inline">\(z=1,\ldots,Z\)</span>，與 <span class="math inline">\(\sigma_{z_u,z_v}^2=\sigma_{z_v,z_u}^2\)</span>，<span class="math inline">\(u,v=1,\ldots,Z, u\neq
+v\)</span>，以及各解釋變數的距離參數 $^{(z)}_j <span class="math inline">\(，\)</span>j=1,,p<span class="math inline">\(，\)</span>z=1,,Z$。</p>
+<p>模組使用方式如下，首先引入模組程式 <code>R/aladderGP.R</code>。</p>
 <pre class="r"><code>source(&#39;R/aladderGP.R&#39;)</code></pre>
+<p><code>aladderGP.R</code>
+模組程式有兩個功能函數：<code>aLadderFit</code> 及
+<code>aLadderPred</code>，前者用於 GP
+模型建立，後者基於模型與輸入的新資料進行預測。以下分別說明兩函數的用法。</p>
+<div id="aladderfit" class="section level3">
+<h3><code>aLadderFit</code></h3>
+<p>建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP
+模型，<code>aLadderFit</code> 函數輸入值說明及使用範例如下：</p>
 <table style="width:100%;">
 <colgroup>
 <col width="11%" />
@@ -1575,12 +1664,14 @@ MVN(\mu, \sigma^2\Psi)\)</span>, <span class="math inline">\(\mu =
 <tbody>
 <tr class="odd">
 <td><code>yList</code></td>
-<td>R list 物件。每個 list 內存放對應階數的單維反應變數 (見範例)</td>
+<td>R list 物件。每個 list 內存放對應階數的單維反應變數
+(見第一節範例)</td>
 <td></td>
 </tr>
 <tr class="even">
 <td><code>xList</code></td>
-<td>R list 物件。每個 list 內存放對應階數的多維解釋變數 (見範例)</td>
+<td>R list 物件。每個 list 內存放對應階數的多維解釋變數
+(見第一節範例)</td>
 <td></td>
 </tr>
 <tr class="odd">
@@ -1622,7 +1713,8 @@ MVN(\mu, \sigma^2\Psi)\)</span>, <span class="math inline">\(\mu =
 <pre class="r"><code>aLadderMdl &lt;- aLadderFit(yList, xList, 
                          contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
                          nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## aLadderGP FIT CPU time: 1.61 seconds.</code></pre>
+<p><code>aLadderFit</code> 函數輸出一個 R List
+物件，包含各項模型參數估計值與原始訓練資料，輸出值說明如下：</p>
 <table>
 <colgroup>
 <col width="10%" />
@@ -1637,52 +1729,60 @@ MVN(\mu, \sigma^2\Psi)\)</span>, <span class="math inline">\(\mu =
 <tbody>
 <tr class="odd">
 <td><code>mu</code></td>
-<td></td>
+<td>實數。GP 模型的期望值 <span class="math inline">\(\mu\)</span>。</td>
 </tr>
 <tr class="even">
 <td><code>thetaZ</code></td>
-<td></td>
+<td>大小 <span class="math inline">\(Z\times p\)</span> 的實數矩陣。第
+<span class="math inline">\(z\)</span> Row、第 <span class="math inline">\(j\)</span> column 的值為 <span class="math inline">\(\theta^{(z)}_j\)</span>。</td>
 </tr>
 <tr class="odd">
 <td><code>sigmaF</code></td>
-<td></td>
+<td>長度為 <span class="math inline">\(Z\)</span> 的實數向量。<span class="math inline">\(\sigma_z^2\)</span></td>
 </tr>
 <tr class="even">
 <td><code>sigmaInt</code></td>
-<td></td>
+<td>大小 <span class="math inline">\(Z\times Z\)</span>
+的實數矩陣。<span class="math inline">\(\sigma_{z_1,z_2}^2\)</span></td>
 </tr>
 <tr class="odd">
 <td><code>psi</code></td>
-<td></td>
+<td>大小 <span class="math inline">\(n\times n\)</span> 的實數矩陣。GP
+模型的共變異數矩陣。</td>
 </tr>
 <tr class="even">
 <td><code>invPsi</code></td>
-<td></td>
+<td>大小 <span class="math inline">\(n\times n\)</span> 的實數矩陣。GP
+模型共變異數矩陣的反矩陣（方便後續應用模型時取用）。</td>
 </tr>
 <tr class="odd">
 <td><code>negloglik</code></td>
-<td></td>
+<td>實數。此 GP 模型的負對數概似值。</td>
 </tr>
 <tr class="even">
 <td><code>nugget</code></td>
-<td>GP 相關矩陣所使用的正定性調整值</td>
+<td>實數。GP 相關矩陣所使用的正定性調整值。</td>
 </tr>
 <tr class="odd">
 <td><code>vecParams</code></td>
-<td></td>
+<td>實數向量。模組排列的 GP 模型參數向量（方便後續應用模型時取用）</td>
 </tr>
 <tr class="even">
 <td><code>data</code></td>
-<td></td>
+<td>模組排列的訓練資料集。</td>
 </tr>
 <tr class="odd">
 <td><code>cputime</code></td>
-<td></td>
+<td>配適此 GP 模型的計算時間。</td>
 </tr>
 </tbody>
 </table>
-<p>mu, thetaZ, sigmaF, sigmaInt, psi, invPsi, negloglik, nugget,
-vecParams, data, cputime</p>
+</div>
+<div id="aladderpred" class="section level3">
+<h3><code>aLadderPred</code></h3>
+<p>輸入新資料，以包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP
+模型進行預測，<code>aLadderPred</code>
+函數輸入值說明及使用範例如下：</p>
 <table style="width:100%;">
 <colgroup>
 <col width="11%" />
@@ -1699,48 +1799,86 @@ vecParams, data, cputime</p>
 <tbody>
 <tr class="odd">
 <td><code>gpMdl</code></td>
-<td>R list 物件。經 <code>aLadderFit</code> 函數訓練後的 GP
+<td>R list 物件。經 <code>mLadderFit</code> 函數訓練後的 GP
 模型物件</td>
 <td>無</td>
 </tr>
 <tr class="even">
 <td><code>x0List</code></td>
-<td>R list 物件。每個 list 內存放對應階數的多維解釋變數 (見範例)</td>
+<td>R list 物件。測試資料，每個 list 內存放對應階數的多維解釋變數
+(見第一節範例)</td>
+<td>無</td>
+</tr>
+<tr class="odd">
+<td><code>y0listTrue</code></td>
+<td>R list 物件。可不輸入，測試資料，每個 list 內存放對應階數的反應變數
+(見第一節範例)</td>
 <td><code>NULL</code></td>
 </tr>
 </tbody>
 </table>
+<p><code>aLadderPred</code> 函數輸出一個 R List 物件，包含模型預測值與
+MSE，輸出值說明如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>輸出變數名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pred</code></td>
+<td>向量。GP 模型的預測值。</td>
+</tr>
+<tr class="even">
+<td><code>mse</code></td>
+<td>向量。預測值的 MSE。</td>
+</tr>
+<tr class="odd">
+<td><code>y_true</code></td>
+<td>向量。測試資料的真實反應變數值。</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code>aLadderPred(aLadderMdl, x0List)$pred</code></pre>
-<pre><code>##           [,1]
-##  [1,] 442111.1
-##  [2,] 420659.5
-##  [3,] 401517.9
-##  [4,] 399186.9
-##  [5,] 351633.6
-##  [6,] 322453.2
-##  [7,] 250156.3
-##  [8,] 304895.2
-##  [9,] 168954.0</code></pre>
+<pre class="r"><code>aLadderPred(aLadderMdl, x0List)$mse </code></pre>
+</div>
 </div>
 <div id="multiplicative-stage-crossing-correlation-structure" class="section level2">
 <h2>Multiplicative Stage-crossing Correlation Structure</h2>
-<p><span class="math display">\[
+<p>本節考慮於連乘相關結構中，針對隱藏變數階段數標記 <span class="math inline">\(z\)</span>，加入關聯參數描述來自不同階段數的兩筆實驗資料
+<span class="math inline">\(Y(s)\)</span> 與 <span class="math inline">\(Y(t)\)</span> 間的相關性，又可分為</p>
+<ul>
+<li><p>視隱藏變數階段數標記為 ordinal 變數時，考慮來自階段數差異的關聯性
+<span class="math inline">\(\tau\)</span> <span class="math display">\[
 \Psi_{st} = \exp{\left\{
-    -\tau (z_s - z_t)^2
-    - \sum_{z=1}^{\min{\{z_s, z_t\}}} \sum_{j=1}^d {
-        \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
-    }
+  -\tau (z_s - z_t)^2
+  - \sum_{z=1}^{\min{\{z_s, z_t\}}} \sum_{j=1}^d {
+      \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
+  }
 \right\}}
-\]</span></p>
-<p><span class="math display">\[
+\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，及各階段資料間的關聯參數 <span class="math inline">\(\tau\)</span>，以及各解釋變數的距離參數 $^{(z)}_j
+<span class="math inline">\(，\)</span>j=1,,p<span class="math inline">\(，\)</span>z=1,,Z$。</p></li>
+<li><p>視隱藏變數階段數標記為 nominal
+變數時，考慮來自兩個不同階段的關聯性 <span class="math inline">\(\tau_{z_s, z_t} = \tau_{z_t, z_s}\)</span>，<span class="math inline">\(z_s, z_t = 1,\ldots,Z\)</span>，<span class="math inline">\(z_s \neq z_t\)</span> <span class="math display">\[
 \Psi_{st} =  \tau_{z_s, z_t} \cdot
 \exp{\left\{
-    - \sum_{z=1}^{\min{\{z_s, z_t\}}} \sum_{j=1}^d {
-        \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
-    }
+  - \sum_{z=1}^{\min{\{z_s, z_t\}}} \sum_{j=1}^d {
+      \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
+  }
 \right\}}
-\]</span></p>
+\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，及各階段資料間的關聯參數 <span class="math inline">\(\tau_{z_s, z_t} = \tau_{z_t, z_s}\)</span>，<span class="math inline">\(z_s, z_t = 1,\ldots,Z\)</span>，<span class="math inline">\(z_s \neq z_t\)</span>，以及各解釋變數的距離參數
+$^{(z)}_j <span class="math inline">\(，\)</span>j=1,,p<span class="math inline">\(，\)</span>z=1,,Z$。</p></li>
+</ul>
+<p>模組使用方式如下，首先引入模組程式 <code>R/mladderGP.R</code>。</p>
 <pre class="r"><code>source(&#39;R/mladderGP.R&#39;)</code></pre>
+<p><code>mladderGP.R</code>
+模組程式有兩個功能函數：<code>mLadderFit</code> 及
+<code>mLadderPred</code>，前者用於 GP
+模型建立，後者基於模型與輸入的新資料進行預測。以下分別說明兩函數的用法。</p>
+<div id="mladderfit" class="section level3">
+<h3><code>mLadderFit</code></h3>
 <table style="width:100%;">
 <colgroup>
 <col width="11%" />
@@ -1757,12 +1895,14 @@ vecParams, data, cputime</p>
 <tbody>
 <tr class="odd">
 <td><code>yList</code></td>
-<td>R list 物件。每個 list 內存放對應階數的單維反應變數 (見範例)</td>
+<td>R list 物件。每個 list 內存放對應階數的單維反應變數
+(見第一節範例)</td>
 <td></td>
 </tr>
 <tr class="even">
 <td><code>xList</code></td>
-<td>R list 物件。每個 list 內存放對應階數的多維解釋變數 (見範例)</td>
+<td>R list 物件。每個 list 內存放對應階數的多維解釋變數
+(見第一節範例)</td>
 <td></td>
 </tr>
 <tr class="odd">
@@ -1811,34 +1951,232 @@ z_t}\)</span> 的搜尋範圍(最小值、最大值)。僅適用於
 <pre class="r"><code>mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(o) FIT CPU time: 1.39 seconds.</code></pre>
-<pre class="r"><code>mLadderPred(mLadderMdl_o, x0List)$pred</code></pre>
-<pre><code>##             [,1]
-##  [1,]  14.156399
-##  [2,]  17.592418
-##  [3,]  19.462375
-##  [4,]  19.535021
-##  [5,]  19.732370
-##  [6,]   9.889604
-##  [7,]  83.382057
-##  [8,] 128.670859
-##  [9,] 110.635224</code></pre>
 <pre class="r"><code>mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(n) FIT CPU time: 1.44 seconds.</code></pre>
-<pre class="r"><code>mLadderPred(mLadderMdl_n, x0List)$pred</code></pre>
-<pre><code>##            [,1]
-##  [1,] 14.217200
-##  [2,] 17.765563
-##  [3,] 20.389873
-##  [4,] 22.838963
-##  [5,] 22.413741
-##  [6,]  9.056305
-##  [7,] 32.139522
-##  [8,] 49.724550
-##  [9,] 64.488350</code></pre>
+<table>
+<colgroup>
+<col width="10%" />
+<col width="89%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸出變數名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mu</code></td>
+<td>實數。GP 模型的期望值 <span class="math inline">\(\mu\)</span>。</td>
+</tr>
+<tr class="even">
+<td><code>sigma2</code></td>
+<td>實數。GP 模型的變異數 <span class="math inline">\(\sigma^2\)</span>。</td>
+</tr>
+<tr class="odd">
+<td><code>tau</code></td>
+<td><code>zType = &quot;o&quot;</code> 時，為實數。視階數為 ordinal
+變數時，對不同階數資料的關聯參數 <span class="math inline">\(\tau\)</span>。</td>
+</tr>
+<tr class="even">
+<td></td>
+<td><code>zType = &quot;n&quot;</code> 時，為大小 <span class="math inline">\(Z\times Z\)</span> 的實數矩陣。視階數為 nominal
+變數時，對不同階數資料的關聯參數，</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>各 element 分別為 <span class="math inline">\(\tau_{z_s,
+z_t}\)</span>，<span class="math inline">\(z_s, z_t =
+1,\ldots,Z\)</span>。</td>
+</tr>
+<tr class="even">
+<td><code>theta</code></td>
+<td>大小 <span class="math inline">\(Z\times p\)</span> 的實數矩陣。第
+<span class="math inline">\(z\)</span> Row、第 <span class="math inline">\(j\)</span> column 的值為 <span class="math inline">\(\theta^{(z)}_j\)</span>。</td>
+</tr>
+<tr class="odd">
+<td><code>psi</code></td>
+<td>大小 <span class="math inline">\(n\times n\)</span> 的實數矩陣。GP
+模型的共變異數矩陣。</td>
+</tr>
+<tr class="even">
+<td><code>invPsi</code></td>
+<td>大小 <span class="math inline">\(n\times n\)</span> 的實數矩陣。GP
+模型共變異數矩陣的反矩陣（方便後續應用模型時取用）。</td>
+</tr>
+<tr class="odd">
+<td><code>negloglik</code></td>
+<td>實數。此 GP 模型的負對數概似值。</td>
+</tr>
+<tr class="even">
+<td><code>nugget</code></td>
+<td>實數。GP 相關矩陣所使用的正定性調整值。</td>
+</tr>
+<tr class="odd">
+<td><code>vecParams</code></td>
+<td>實數向量。模組排列的 GP 模型參數向量（方便後續應用模型時取用）</td>
+</tr>
+<tr class="even">
+<td><code>zType</code></td>
+<td>Char。GP 模型對不同階數間訊息的關聯方式，<code>&quot;o&quot;</code>：視階數為
+ordinal 變數，<code>&quot;n&quot;</code>：視階數為 nominal 變數。</td>
+</tr>
+<tr class="odd">
+<td><code>data</code></td>
+<td>模組排列的訓練資料集。</td>
+</tr>
+<tr class="even">
+<td><code>cputime</code></td>
+<td>配適此 GP 模型的計算時間。</td>
+</tr>
+</tbody>
+</table>
 </div>
+<div id="mladderpred" class="section level3">
+<h3><code>mLadderPred</code></h3>
+<p>輸入新資料，以包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP
+模型進行預測，<code>mLadderPred</code>
+函數輸入值說明及使用範例如下：</p>
+<table style="width:100%;">
+<colgroup>
+<col width="11%" />
+<col width="77%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸入變數名稱</th>
+<th>說明</th>
+<th>預設值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>gpMdl</code></td>
+<td>R list 物件。經 <code>mLadderFit</code> 函數訓練後的 GP
+模型物件</td>
+<td>無</td>
+</tr>
+<tr class="even">
+<td><code>x0List</code></td>
+<td>R list 物件。測試資料，每個 list 內存放對應階數的多維解釋變數
+(見第一節範例)</td>
+<td>無</td>
+</tr>
+<tr class="odd">
+<td><code>y0listTrue</code></td>
+<td>R list 物件。可不輸入，測試資料，每個 list 內存放對應階數的反應變數
+(見第一節範例)</td>
+<td><code>NULL</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>mLadderPred</code> 函數輸出一個 R List 物件，包含模型預測值與
+MSE，輸出值說明如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>輸出變數名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pred</code></td>
+<td>向量。GP 模型的預測值。</td>
+</tr>
+<tr class="even">
+<td><code>mse</code></td>
+<td>向量。預測值的 MSE。</td>
+</tr>
+<tr class="odd">
+<td><code>y_true</code></td>
+<td>向量。測試資料的真實反應變數值。</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>mLadderPred(mLadderMdl_o, x0List)$pred</code></pre>
+<pre class="r"><code>mLadderPred(mLadderMdl_o, x0List)$mse </code></pre>
+<pre class="r"><code>mLadderPred(mLadderMdl_n, x0List)$pred</code></pre>
+<pre class="r"><code>mLadderPred(mLadderMdl_n, x0List)$mse</code></pre>
+</div>
+</div>
+</div>
+<div id="full-demostration" class="section level1">
+<h1>Full Demostration</h1>
+<p>以下為完整示範例，利用模擬的訓練資料建立 GP
+模型，再使用測試資料進行預測並與真實質比較，計算 RMSE。</p>
+<pre class="r"><code>### 引入 Demo 須要用的 Space Filling Design 套件
+library(SFDesign)
+### 引入測試用函數集
+source(&#39;R/testfunction.R&#39;)
+### 引入 GP 模組
+source(&#39;R/mladderGP.R&#39;)
+source(&#39;R/aladderGP.R&#39;)
+
+### 設定各階段資料維度
+p_data &lt;- c(2, 4, 6)     # 各階段實驗的因子數
+n_train &lt;- c(10, 10, 10) # 訓練資料各階段實驗的樣本數
+
+### 使用 maxproLHD 產生測試資料的解釋變數
+xList &lt;- lapply(1:length(p_data), function(k) {
+  maxproLHD(n_train[k], p_data[k])$design
+})
+
+### 以 Rastrigin 函數產生訓練資料各階段模擬資料的反應變數 
+yList &lt;- lapply(1:length(p_data), function(k) {
+  tmp &lt;- numeric(nrow(xList[[k]]))
+  for (i in 1:nrow(xList[[k]])) {
+    tmp[i] &lt;- Rastrigin(xList[[k]][i,])
+  }
+  tmp
+})
+
+### 測試資料各階段實驗的樣本數
+n_test &lt;- c(3, 3, 3) 
+
+### 使用 maxproLHD 產生測試資料的解釋變數
+x0List &lt;- lapply(1:length(p_data), function(k) {
+  maxproLHD(n_test[k], p_data[k])$design
+})
+
+### 以 Rastrigin 函數產生測試資料各階段模擬資料的反應變數 
+y0List &lt;- lapply(1:length(p_data), function(k) {
+  tmp &lt;- numeric(nrow(x0List[[k]]))
+  for (i in 1:nrow(x0List[[k]])) {
+    tmp[i] &lt;- Rastrigin(x0List[[k]][i,])
+  }
+  tmp
+})
+
+### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
+aLadderMdl &lt;- aLadderFit(yList, xList, 
+                         contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
+                         nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+<pre><code>## aLadderGP FIT CPU time: 1.70 seconds.</code></pre>
+<pre class="r"><code>### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
+aPred &lt;- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)
+cat(sprintf(&quot;RMSE(aLadderMdl) = %.4f\n&quot;, sqrt(sum((aPred$pred - aPred$y_true)^2))))</code></pre>
+<pre><code>## RMSE(aLadderMdl) = 88676.2342</code></pre>
+<pre class="r"><code>### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
+mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
+                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
+                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+<pre><code>## mLadderGP(o) FIT CPU time: 1.46 seconds.</code></pre>
+<pre class="r"><code>### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
+mPred_o &lt;- mLadderPred(mLadderMdl_o, x0List, y0listTrue = y0List)
+cat(sprintf(&quot;RMSE(mLadderMdl_o) = %.4f\n&quot;, sqrt(sum((mPred_o$pred - mPred_o$y_true)^2))))</code></pre>
+<pre><code>## RMSE(mLadderMdl_o) = 31.9406</code></pre>
+<pre class="r"><code>### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
+mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
+                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
+                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+<pre><code>## mLadderGP(n) FIT CPU time: 1.50 seconds.</code></pre>
+<pre class="r"><code>### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
+mPred_n &lt;- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)
+cat(sprintf(&quot;RMSE(mLadderMdl_n) = %.4f\n&quot;, sqrt(sum((mPred_n$pred - mPred_n$y_true)^2))))</code></pre>
+<pre><code>## RMSE(mLadderMdl_n) = 40.1084</code></pre>
 </div>
 
 

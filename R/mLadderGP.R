@@ -18,6 +18,7 @@ mLadderFit <- function(yList, xList, zType = c("o", "n"),
                        nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = TRUE) {
  
   cputime <- system.time({
+    stopifnot(length(xList) == length(yList))
     xDims <- sapply(1:length(xList), function(k) ncol(xList[[k]]))
     xzDim <- min(xDims)
     zs <- xDims/xzDim
@@ -70,7 +71,7 @@ mLadderFit <- function(yList, xList, zType = c("o", "n"),
 }
 
 
-mLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
+mLadderPred <- function(gpMdl, x0List, y0listTrue = NULL, ei_alpha = 0.5, min_y = NULL) {
   
   cputime <- system.time({
     
@@ -79,7 +80,7 @@ mLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
     zs <- xDims/xzDim
     x0 <- matrix(0, nrow = 0, ncol = max(xDims))
     z0 <- dimCheck <- c()
-    for (i in 1:length(yList)) {
+    for (i in 1:length(x0List)) {
       n <- nrow(x0List[[i]])
       x0 <- rbind(x0, cbind(x0List[[i]], matrix(-1, n, ncol(x0) - ncol(x0List[[i]]))))
       z0 <- c(z0, rep(xDims[i]/xzDim, n))
@@ -87,6 +88,16 @@ mLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
     }
     stopifnot(all(dimCheck == 0))
     
+    if (!is.null(y0listTrue)) {
+      stopifnot(length(x0List) == length(y0listTrue))
+      yTrue <- c()
+      for (i in 1:length(yList)) {
+        yTrue <- c(yTrue, y0listTrue[[i]])
+      }
+    } else {
+      yTrue <- "Empty true value in the input arguments"
+    }
+
     if (is.null(min_y)) { min_y <- min(gpMdl$data$y) }
     
     zType <- gpMdl$zType
@@ -99,6 +110,8 @@ mLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
     }
    
   })[3]
+  
+  pred$y_true <- yTrue
   return(pred)
 } 
 

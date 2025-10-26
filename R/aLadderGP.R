@@ -55,7 +55,7 @@ aLadderFit <- function(yList, xList,
 }
 
 
-aLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
+aLadderPred <- function(gpMdl, x0List, y0listTrue = NULL, ei_alpha = 0.5, min_y = NULL) {
   
   cputime <- system.time({
     
@@ -64,7 +64,7 @@ aLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
     zs <- xDims/xzDim
     x0 <- matrix(0, nrow = 0, ncol = max(xDims))
     z0 <- dimCheck <- c()
-    for (i in 1:length(yList)) {
+    for (i in 1:length(x0List)) {
       n <- nrow(x0List[[i]])
       x0 <- rbind(x0, cbind(x0List[[i]], matrix(-1, n, ncol(x0) - ncol(x0List[[i]]))))
       z0 <- c(z0, rep(xDims[i]/xzDim, n))
@@ -72,11 +72,23 @@ aLadderPred <- function(gpMdl, x0List, ei_alpha = 0.5, min_y = NULL) {
     }
     stopifnot(all(dimCheck == 0))
     
+    if (!is.null(y0listTrue)) {
+      stopifnot(length(x0List) == length(y0listTrue))
+      yTrue <- c()
+      for (i in 1:length(yList)) {
+        yTrue <- c(yTrue, y0listTrue[[i]])
+      }
+    } else {
+      yTrue <- "Empty true value in the input arguments"
+    }
+    
     if (is.null(min_y)) { min_y <- min(gpMdl$data$y) }
     
     pred <- aIntPred(x0, z0, gpMdl$data$y, gpMdl$data$x, gpMdl$data$z, gpMdl$data$xzDim,
                      gpMdl$vecParams, gpMdl$invPsi, gpMdl$mu, ei_alpha, min_y)
   })[3]
+  
+  pred$y_true <- yTrue
   return(pred)
 } 
 
