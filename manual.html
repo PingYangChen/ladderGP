@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ping-Yang Chen" />
 
-<meta name="date" content="2025-10-26" />
+<meta name="date" content="2025-10-28" />
 
 <title>Manual of Gaussian Process Modelling Functions for Ladder-shaped Input Data</title>
 
@@ -1500,7 +1500,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Manual of Gaussian Process Modelling
 Functions for Ladder-shaped Input Data</h1>
 <h4 class="author">Ping-Yang Chen</h4>
-<h4 class="date">2025-10-26</h4>
+<h4 class="date">2025-10-28</h4>
 
 </div>
 
@@ -1637,7 +1637,7 @@ n\)</span>。在此，解釋變數為數值型，但當兩資料來自不同階�
 \right\}}
 \end{align*}
 \]</span> 在此模型考量下，模型參數包含期望值 <span class="math inline">\(\mu\)</span>、各項相關結構之變異數 <span class="math inline">\(\sigma_z^2\)</span>，<span class="math inline">\(z=1,\ldots,Z\)</span>，與 <span class="math inline">\(\sigma_{z_u,z_v}^2=\sigma_{z_v,z_u}^2\)</span>，<span class="math inline">\(u,v=1,\ldots,Z, u\neq
-v\)</span>，以及各解釋變數的距離參數 $^{(z)}_j <span class="math inline">\(，\)</span>j=1,,p<span class="math inline">\(，\)</span>z=1,,Z$。</p>
+v\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\theta^{(z)}_j\)</span> ， <span class="math inline">\(j=1,\ldots,p\)</span> ， <span class="math inline">\(z=1,\ldots,Z\)</span>。</p>
 <p>模組使用方式如下，首先引入模組程式 <code>R/aladderGP.R</code>。</p>
 <pre class="r"><code>source(&#39;R/aladderGP.R&#39;)</code></pre>
 <p><code>aladderGP.R</code>
@@ -2154,29 +2154,29 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
 aLadderMdl &lt;- aLadderFit(yList, xList, 
                          contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
                          nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## aLadderGP FIT CPU time: 1.70 seconds.</code></pre>
+<pre><code>## aLadderGP FIT CPU time: 1.68 seconds.</code></pre>
 <pre class="r"><code>### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
 aPred &lt;- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(aLadderMdl) = %.4f\n&quot;, sqrt(sum((aPred$pred - aPred$y_true)^2))))</code></pre>
-<pre><code>## RMSE(aLadderMdl) = 88676.2342</code></pre>
+<pre><code>## RMSE(aLadderMdl) = 2167.9200</code></pre>
 <pre class="r"><code>### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(o) FIT CPU time: 1.46 seconds.</code></pre>
+<pre><code>## mLadderGP(o) FIT CPU time: 1.45 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
 mPred_o &lt;- mLadderPred(mLadderMdl_o, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_o) = %.4f\n&quot;, sqrt(sum((mPred_o$pred - mPred_o$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_o) = 31.9406</code></pre>
+<pre><code>## RMSE(mLadderMdl_o) = 129.5082</code></pre>
 <pre class="r"><code>### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(n) FIT CPU time: 1.50 seconds.</code></pre>
+<pre><code>## mLadderGP(n) FIT CPU time: 1.05 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
 mPred_n &lt;- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_n) = %.4f\n&quot;, sqrt(sum((mPred_n$pred - mPred_n$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_n) = 40.1084</code></pre>
+<pre><code>## RMSE(mLadderMdl_n) = 16.8438</code></pre>
 </div>
 
 

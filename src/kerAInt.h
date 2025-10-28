@@ -58,12 +58,12 @@ double aIntCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma::
                     const arma::mat &thetaZ, const arma::vec &sigmaF, const arma::mat &sigmaInt) 
 {
   /* corr X*/
-  arma::rowvec xDiff = xi - xj;
+  arma::rowvec xDiffSq = arma::pow(xi - xj, 2);
   arma::uword zComm = 0;
   if (zi > zj) { zComm = zj; } else { zComm = zi; }
   arma::vec corrXvec(zComm, fill::zeros);
   for (arma::uword i = 0; i < zComm; i++) {
-    arma::rowvec xdtmp = xDiff.subvec(i*xzDim, (i+1)*xzDim - 1);
+    arma::rowvec xdtmp = xDiffSq.subvec(i*xzDim, (i+1)*xzDim - 1);
     corrXvec(i) = std::exp(-(1.0)*arma::accu(thetaZ.row(i) % xdtmp));
   }
   double val = 0.0;

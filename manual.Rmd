@@ -127,7 +127,7 @@ $$
 \right\}}
 \end{align*}
 $$
-在此模型考量下，模型參數包含期望值 $\mu$、各項相關結構之變異數 $\sigma_z^2$，$z=1,\ldots,Z$，與 $\sigma_{z_u,z_v}^2=\sigma_{z_v,z_u}^2$，$u,v=1,\ldots,Z, u\neq v$，以及各解釋變數的距離參數 $\theta^{(z)}_j $，$j=1,\ldots,p$，$z=1,\ldots,Z$。
+在此模型考量下，模型參數包含期望值 $\mu$、各項相關結構之變異數 $\sigma_z^2$，$z=1,\ldots,Z$，與 $\sigma_{z_u,z_v}^2=\sigma_{z_v,z_u}^2$，$u,v=1,\ldots,Z, u\neq v$，以及各解釋變數的距離參數 $\theta^{(z)}_j$ ， $j=1,\ldots,p$ ， $z=1,\ldots,Z$。
 
 模組使用方式如下，首先引入模組程式 `R/aladderGP.R`。
 

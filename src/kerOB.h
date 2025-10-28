@@ -45,12 +45,12 @@ double lgpOBCorrKern(const arma::rowvec &xi, const arma::rowvec &xj, const arma:
   double zzj = (double)zj;
   double logCorrZ = tau*(zzi - zzj)*(zzi - zzj);
   /* corr X*/
-  arma::rowvec xDiff = xi - xj;
+  arma::rowvec xDiffSq = arma::pow(xi - xj, 2);
   arma::uword zComm = 0;
   if (zi > zj) { zComm = zj; } else { zComm = zi; }
   double logCorrX = 0.0;
   for (arma::uword i = 0; i < zComm; i++) {
-    arma::rowvec xdtmp = xDiff.subvec(i*xzDim, (i+1)*xzDim - 1);
+    arma::rowvec xdtmp = xDiffSq.subvec(i*xzDim, (i+1)*xzDim - 1);
     logCorrX += arma::accu(theta.row(i) % xdtmp);
   }
   double val = std::exp((-1.0)*(logCorrZ + logCorrX));
