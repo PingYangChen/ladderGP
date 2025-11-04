@@ -221,9 +221,9 @@ $$
     }
 \right\}}
 $$
-在此關聯結構考量下，模型參數包含期望值與變異數 $\mu$、$\sigma^2$，及各階段資料間的關聯參數 $\tau$，以及各解釋變數的距離參數 $\theta^{(z)}_j $，$j=1,\ldots,p$，$z=1,\ldots,Z$。
+在此關聯結構考量下，模型參數包含期望值與變異數 $\mu$、$\sigma^2$，及各階段資料間的關聯參數 $\tau$，以及各解釋變數的距離參數 $\theta^{(z)}_j$ ， $j=1,\ldots,p$ ， $z=1,\ldots,Z$ 。
 
-- 視隱藏變數階段數標記為 nominal 變數時，考慮來自兩個不同階段的關聯性 $\tau_{z_s, z_t} = \tau_{z_t, z_s}$，$z_s, z_t = 1,\ldots,Z$，$z_s \neq z_t$
+- 視隱藏變數階段數標記為 nominal 變數時，考慮來自兩個不同階段的關聯性 $\tau_{z_s, z_t} = \tau_{z_t, z_s}$ ， $z_s, z_t = 1,\ldots,Z$ ， $z_s \neq z_t$
 $$
 \Psi_{st} =  \tau_{z_s, z_t} \cdot
 \exp{\left\{
@@ -232,7 +232,7 @@ $$
     }
 \right\}}
 $$
-在此關聯結構考量下，模型參數包含期望值與變異數 $\mu$、$\sigma^2$，及各階段資料間的關聯參數 $\tau_{z_s, z_t} = \tau_{z_t, z_s}$，$z_s, z_t = 1,\ldots,Z$，$z_s \neq z_t$，以及各解釋變數的距離參數 $\theta^{(z)}_j $，$j=1,\ldots,p$，$z=1,\ldots,Z$。
+在此關聯結構考量下，模型參數包含期望值與變異數 $\mu$、$\sigma^2$，及各階段資料間的關聯參數 $\tau_{z_s, z_t} = \tau_{z_t, z_s}$ ， $z_s, z_t = 1,\ldots,Z$ ， $z_s \neq z_t$ ，以及各解釋變數的距離參數 $\theta^{(z)}_j$ ， $j=1,\ldots,p$ ， $z=1,\ldots,Z$。
 
 
 模組使用方式如下，首先引入模組程式 `R/mladderGP.R`。
