@@ -202,7 +202,7 @@ Rcpp::List lgpNBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma
 }
 
 
-
+// Stage as interaction effect
 //[[Rcpp::export]]
 double aIntObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
 {
@@ -270,6 +270,75 @@ Rcpp::List aIntPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma:
   arma::vec ei_2(n0, fill::zeros);
   aIntNewData(y0, mse, ei, ei_1, ei_2, ei_alpha, min_y, x0, z0, y, x, z, xzDim, 
               mu, invPsi, thetaZ, sigmaF, sigmaInt);
+  //
+  return List::create(Named("pred") = wrap(y0),
+                      Named("mse") = wrap(mse),
+                      Named("ei") = wrap(ei),
+                      Named("improvement") = wrap(ei_1),
+                      Named("uncertainty") = wrap(ei_2)
+  );
+}
+
+// Independence across Stages
+
+//[[Rcpp::export]]
+double lgpNvObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+{
+  arma::uword n = x.n_rows;
+  arma::uword zMax = z.max();
+  double negloglik, mu, sigma;
+  arma::mat psi(n, n, fill::eye); 
+  arma::mat invPsi(n, n, fill::eye);
+  //
+  arma::mat theta;
+  //double nugget = 0.;
+  nvParam2vec(theta, param, xzDim, zMax);
+  nvLogLik(negloglik, psi, invPsi, mu, sigma, nugget, y, x, z, xzDim, theta);
+  return negloglik;
+}
+
+//[[Rcpp::export]]
+Rcpp::List lgpNvModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+{
+  arma::uword n = x.n_rows;
+  arma::uword zMax = z.max();
+  double negloglik, mu, sigma;
+  arma::mat psi(n, n, fill::eye); 
+  arma::mat invPsi(n, n, fill::eye);
+  //
+  arma::mat theta;
+  //double nugget = 0.;
+  nvParam2vec(theta, param, xzDim, zMax);
+  nvLogLik(negloglik, psi, invPsi, mu, sigma, nugget, y, x, z, xzDim, theta);
+  //
+  return List::create(Named("mu") = wrap(mu),
+                      Named("sigma2") = wrap(sigma),
+                      Named("theta") = wrap(theta),
+                      Named("psi") = wrap(psi),
+                      Named("invPsi") = wrap(invPsi),
+                      Named("negloglik") = wrap(negloglik),
+                      Named("nugget") = wrap(nugget),
+                      Named("vecParams") = wrap(param)
+  );
+}
+
+//[[Rcpp::export]]
+Rcpp::List lgpNvPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
+                     arma::rowvec param, arma::mat invPsi, double mu, double sigma, double ei_alpha, double min_y)
+{
+  arma::uword n0 = x0.n_rows;
+  arma::uword zMax = z.max();
+  //
+  arma::mat theta;
+  nvParam2vec(theta, param, xzDim, zMax);
+  //
+  arma::vec y0(n0, fill::zeros);
+  arma::vec mse(n0, fill::zeros);
+  arma::vec ei(n0, fill::zeros);
+  arma::vec ei_1(n0, fill::zeros);
+  arma::vec ei_2(n0, fill::zeros);
+  nvNewData(y0, mse, ei, ei_1, ei_2, ei_alpha, min_y, x0, z0, y, x, z, xzDim, 
+            mu, sigma, invPsi, theta);
   //
   return List::create(Named("pred") = wrap(y0),
                       Named("mse") = wrap(mse),
