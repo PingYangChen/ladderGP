@@ -126,19 +126,27 @@ void aIntLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu
   arma::uword n = y.n_elem;
   arma::vec onevec(n, fill::ones);
   aIntCorrMat(psi, x, z, xzDim, thetaZ, sigmaF, sigmaInt);
+  /*
   arma::vec eigval;
   arma::mat eigvec;
   arma::eig_sym(eigval, eigvec, psi);
-  arma::mat eyemat(n, n, fill::eye);
   double checkCond = std::abs(eigval.max()) - 1e8*std::abs(eigval.min());
   if ((nugget == 0) & (checkCond >= 0)) {
     nugget = checkCond/(1e8 - 1);
   }
+  */
+  double rcondNum = arma::rcond(psi);
+  if ((nugget == 0) & (rcondNum < psi.n_rows*datum::eps)) {
+    nugget = (double)(psi.n_rows)/(1e12 - 1);
+  }
+  arma::mat eyemat(n, n, fill::eye);
   psi += nugget*eyemat;
   double detPsi;
   double signDetPsi;
   bool invSucc;
-  invSucc = arma::inv_sympd(invPsi, psi, inv_opts::allow_approx);
+  // Same approach as cholesky (https://arma.sourceforge.net/docs.html#chol)
+  //invSucc = arma::inv_sympd(invPsi, psi, inv_opts::allow_approx);
+  invSucc = arma::inv_sympd(invPsi, psi);
   arma::log_det(detPsi, signDetPsi, psi);
   //if (std::isfinite(detPsi) & (signDetPsi >= 0)) 
   if (invSucc) {
