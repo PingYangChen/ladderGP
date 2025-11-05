@@ -94,6 +94,7 @@ void nvLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu, 
                const arma::mat &thetaZ)
 {
   arma::uword n = y.n_elem;
+  double n_double = (double)n;
   arma::vec onevec(n, fill::ones);
   nvCorrMat(psi, x, z, xzDim, thetaZ);
   arma::vec eigval;
@@ -112,7 +113,7 @@ void nvLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu, 
   arma::log_det(detPsi, signDetPsi, psi);
   //if (std::isfinite(detPsi) & (signDetPsi >= 0)) 
   if (invSucc) {
-    double yPsiY = arma::as_scalar(y.t()*invPsi*y);
+    //double yPsiY = arma::as_scalar(y.t()*invPsi*y);
     double onePsiY = arma::as_scalar(onevec.t()*invPsi*y);
     double onePsiOne = arma::as_scalar(onevec.t()*invPsi*onevec);
     mu = onePsiY/onePsiOne;
@@ -132,7 +133,7 @@ void nvNewData(arma::vec &y0, arma::vec &mse, arma::vec &ei, arma::vec &ei_1, ar
   arma::uword n = x.n_rows;
   arma::uword n0 = x0.n_rows;
   arma::mat phi(n, n0, fill::zeros);
-  aIntCorrVecs(phi, x0, z0, x, z, xzDim, thetaZ, sigmaF, sigmaInt);
+  nvCorrVecs(phi, x0, z0, x, z, xzDim, thetaZ);
   arma::vec onevec(n, fill::ones);
   arma::vec resid = y - mu*onevec; 
   arma::vec psiinvresid = invPsi*resid;

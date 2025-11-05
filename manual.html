@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ping-Yang Chen" />
 
-<meta name="date" content="2025-10-28" />
+<meta name="date" content="2025-11-05" />
 
 <title>Manual of Gaussian Process Modelling Functions for Ladder-shaped Input Data</title>
 
@@ -1500,7 +1500,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Manual of Gaussian Process Modelling
 Functions for Ladder-shaped Input Data</h1>
 <h4 class="author">Ping-Yang Chen</h4>
-<h4 class="date">2025-10-28</h4>
+<h4 class="date">2025-11-05</h4>
 
 </div>
 
@@ -1858,18 +1858,19 @@ MSE，輸出值說明如下：</p>
       \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
   }
 \right\}}
-\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，及各階段資料間的關聯參數 <span class="math inline">\(\tau\)</span>，以及各解釋變數的距離參數 $^{(z)}_j
-<span class="math inline">\(，\)</span>j=1,,p<span class="math inline">\(，\)</span>z=1,,Z$。</p></li>
+\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，及各階段資料間的關聯參數 <span class="math inline">\(\tau\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\theta^{(z)}_j\)</span> ， <span class="math inline">\(j=1,\ldots,p\)</span> ， <span class="math inline">\(z=1,\ldots,Z\)</span> 。</p></li>
 <li><p>視隱藏變數階段數標記為 nominal
-變數時，考慮來自兩個不同階段的關聯性 <span class="math inline">\(\tau_{z_s, z_t} = \tau_{z_t, z_s}\)</span>，<span class="math inline">\(z_s, z_t = 1,\ldots,Z\)</span>，<span class="math inline">\(z_s \neq z_t\)</span> <span class="math display">\[
+變數時，考慮來自兩個不同階段的關聯性 <span class="math inline">\(\tau_{z_s, z_t} = \tau_{z_t, z_s}\)</span> ，
+<span class="math inline">\(z_s, z_t = 1,\ldots,Z\)</span> ， <span class="math inline">\(z_s \neq z_t\)</span> <span class="math display">\[
 \Psi_{st} =  \tau_{z_s, z_t} \cdot
 \exp{\left\{
   - \sum_{z=1}^{\min{\{z_s, z_t\}}} \sum_{j=1}^d {
       \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
   }
 \right\}}
-\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，及各階段資料間的關聯參數 <span class="math inline">\(\tau_{z_s, z_t} = \tau_{z_t, z_s}\)</span>，<span class="math inline">\(z_s, z_t = 1,\ldots,Z\)</span>，<span class="math inline">\(z_s \neq z_t\)</span>，以及各解釋變數的距離參數
-$^{(z)}_j <span class="math inline">\(，\)</span>j=1,,p<span class="math inline">\(，\)</span>z=1,,Z$。</p></li>
+\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，及各階段資料間的關聯參數 <span class="math inline">\(\tau_{z_s, z_t} = \tau_{z_t, z_s}\)</span> ，
+<span class="math inline">\(z_s, z_t = 1,\ldots,Z\)</span> ， <span class="math inline">\(z_s \neq z_t\)</span> ，以及各解釋變數的距離參數
+<span class="math inline">\(\theta^{(z)}_j\)</span> ， <span class="math inline">\(j=1,\ldots,p\)</span> ， <span class="math inline">\(z=1,\ldots,Z\)</span>。</p></li>
 </ul>
 <p>模組使用方式如下，首先引入模組程式 <code>R/mladderGP.R</code>。</p>
 <pre class="r"><code>source(&#39;R/mladderGP.R&#39;)</code></pre>
@@ -2035,7 +2036,7 @@ ordinal 變數，<code>&quot;n&quot;</code>：視階數為 nominal 變數。</td
 </div>
 <div id="mladderpred" class="section level3">
 <h3><code>mLadderPred</code></h3>
-<p>輸入新資料，以包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP
+<p>輸入新資料，以加入關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP
 模型進行預測，<code>mLadderPred</code>
 函數輸入值說明及使用範例如下：</p>
 <table style="width:100%;">
@@ -2102,6 +2103,209 @@ MSE，輸出值說明如下：</p>
 <pre class="r"><code>mLadderPred(mLadderMdl_n, x0List)$mse</code></pre>
 </div>
 </div>
+<div id="neglected-stage-crossing-correlation-structure-for-comparison" class="section level2">
+<h2>Neglected Stage-crossing Correlation Structure (for comparison)</h2>
+<p>為探討前述兩種（連加型與連乘型 GP 模型）於 Ladder-shaped
+資料的建模表現，本節提供一較為單純的 GP
+模型關聯架構，不針對兩階段數相異的資料考慮其間的關聯參數，僅考慮兩資料於共通階段時因子間的關聯性
+<span class="math display">\[
+\Psi_{st} = \exp{\left\{
+    - \sum_{z=1}^{\min{\{z_s, z_t\}}} \sum_{j=1}^d {
+        \theta^{(z)}_j \left(x^{(z)}_{js} - x^{(z)}_{jt}\right)^2
+    }
+\right\}}
+\]</span> 在此關聯結構考量下，模型參數包含期望值與變異數 <span class="math inline">\(\mu\)</span>、<span class="math inline">\(\sigma^2\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\theta^{(z)}_j\)</span> ， <span class="math inline">\(j=1,\ldots,p\)</span> ， <span class="math inline">\(z=1,\ldots,Z\)</span> 。</p>
+<p>模組使用方式如下，首先引入模組程式 <code>R/nvladderGP.R</code>。</p>
+<pre class="r"><code>source(&#39;R/nvladderGP.R&#39;)</code></pre>
+<p><code>nvladderGP.R</code>
+模組程式有兩個功能函數：<code>nvLadderFit</code> 及
+<code>nvLadderPred</code>，前者用於 GP
+模型建立，後者基於模型與輸入的新資料進行預測。以下分別說明兩函數的用法。</p>
+<div id="nvladderfit" class="section level3">
+<h3><code>nvLadderFit</code></h3>
+<table style="width:100%;">
+<colgroup>
+<col width="11%" />
+<col width="77%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸入變數名稱</th>
+<th>說明</th>
+<th>預設值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>yList</code></td>
+<td>R list 物件。每個 list 內存放對應階數的單維反應變數
+(見第一節範例)</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>xList</code></td>
+<td>R list 物件。每個 list 內存放對應階數的多維解釋變數
+(見第一節範例)</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>contiParRange</code></td>
+<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span>
+的搜尋範圍(最小值、最大值)。</td>
+<td><code>10^c(-3, .5)</code></td>
+</tr>
+<tr class="even">
+<td><code>nSwarm</code></td>
+<td>正整數。PSO 粒子數，用於 likelihood 最佳化。</td>
+<td><code>64</code></td>
+</tr>
+<tr class="odd">
+<td><code>maxIter</code></td>
+<td>正整數。PSO 迭代次數，用於 likelihood 最佳化。</td>
+<td><code>200</code></td>
+</tr>
+<tr class="even">
+<td><code>nugget</code></td>
+<td>正數。GP 相關矩陣的正定性調整值，通常為很小的數，如
+<code>1e-8</code>。若輸入 <code>0</code>
+則由函數自動判斷是否加上調整值。</td>
+<td><code>0.</code></td>
+</tr>
+<tr class="odd">
+<td><code>optVerbose</code></td>
+<td>是否顯示 likelihood 最佳化進度。</td>
+<td><code>TRUE</code></td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>nvLadderMdl &lt;- nvLadderFit(yList, xList, contiParRange = 10^c(-3, .5), 
+                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+<table>
+<colgroup>
+<col width="10%" />
+<col width="89%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸出變數名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mu</code></td>
+<td>實數。GP 模型的期望值 <span class="math inline">\(\mu\)</span>。</td>
+</tr>
+<tr class="even">
+<td><code>sigma2</code></td>
+<td>實數。GP 模型的變異數 <span class="math inline">\(\sigma^2\)</span>。</td>
+</tr>
+<tr class="odd">
+<td><code>theta</code></td>
+<td>大小 <span class="math inline">\(Z\times p\)</span> 的實數矩陣。第
+<span class="math inline">\(z\)</span> Row、第 <span class="math inline">\(j\)</span> column 的值為 <span class="math inline">\(\theta^{(z)}_j\)</span>。</td>
+</tr>
+<tr class="even">
+<td><code>psi</code></td>
+<td>大小 <span class="math inline">\(n\times n\)</span> 的實數矩陣。GP
+模型的共變異數矩陣。</td>
+</tr>
+<tr class="odd">
+<td><code>invPsi</code></td>
+<td>大小 <span class="math inline">\(n\times n\)</span> 的實數矩陣。GP
+模型共變異數矩陣的反矩陣（方便後續應用模型時取用）。</td>
+</tr>
+<tr class="even">
+<td><code>negloglik</code></td>
+<td>實數。此 GP 模型的負對數概似值。</td>
+</tr>
+<tr class="odd">
+<td><code>nugget</code></td>
+<td>實數。GP 相關矩陣所使用的正定性調整值。</td>
+</tr>
+<tr class="even">
+<td><code>vecParams</code></td>
+<td>實數向量。模組排列的 GP 模型參數向量（方便後續應用模型時取用）</td>
+</tr>
+<tr class="odd">
+<td><code>data</code></td>
+<td>模組排列的訓練資料集。</td>
+</tr>
+<tr class="even">
+<td><code>cputime</code></td>
+<td>配適此 GP 模型的計算時間。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="nvladderpred" class="section level3">
+<h3><code>nvLadderPred</code></h3>
+<p>輸入新資料，以不包含描述兩階段數相異實驗資料間的關聯參數之 GP
+模型進行預測，<code>nvLadderPred</code>
+函數輸入值說明及使用範例如下：</p>
+<table style="width:100%;">
+<colgroup>
+<col width="11%" />
+<col width="77%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>輸入變數名稱</th>
+<th>說明</th>
+<th>預設值</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>gpMdl</code></td>
+<td>R list 物件。經 <code>nvLadderFit</code> 函數訓練後的 GP
+模型物件</td>
+<td>無</td>
+</tr>
+<tr class="even">
+<td><code>x0List</code></td>
+<td>R list 物件。測試資料，每個 list 內存放對應階數的多維解釋變數
+(見第一節範例)</td>
+<td>無</td>
+</tr>
+<tr class="odd">
+<td><code>y0listTrue</code></td>
+<td>R list 物件。可不輸入，測試資料，每個 list 內存放對應階數的反應變數
+(見第一節範例)</td>
+<td><code>NULL</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>nvLadderPred</code> 函數輸出一個 R List 物件，包含模型預測值與
+MSE，輸出值說明如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>輸出變數名稱</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pred</code></td>
+<td>向量。GP 模型的預測值。</td>
+</tr>
+<tr class="even">
+<td><code>mse</code></td>
+<td>向量。預測值的 MSE。</td>
+</tr>
+<tr class="odd">
+<td><code>y_true</code></td>
+<td>向量。測試資料的真實反應變數值。</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>nvLadderPred(nvLadderMdl, x0List)$pred</code></pre>
+<pre class="r"><code>nvLadderPred(nvLadderMdl, x0List)$mse </code></pre>
+</div>
+</div>
 </div>
 <div id="full-demostration" class="section level1">
 <h1>Full Demostration</h1>
@@ -2112,8 +2316,9 @@ library(SFDesign)
 ### 引入測試用函數集
 source(&#39;R/testfunction.R&#39;)
 ### 引入 GP 模組
-source(&#39;R/mladderGP.R&#39;)
+source(&#39;R/nvladderGP.R&#39;)
 source(&#39;R/aladderGP.R&#39;)
+source(&#39;R/mladderGP.R&#39;)
 
 ### 設定各階段資料維度
 p_data &lt;- c(2, 4, 6)     # 各階段實驗的因子數
@@ -2150,33 +2355,42 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
   tmp
 })
 
-### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
+
+### 建立不包含描述兩階段數相異實驗資料間的關聯參數之 GP 模型 
+nvLadderMdl &lt;- nvLadderFit(yList, xList, contiParRange = 10^c(-3, .5), 
+                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+<pre><code>## NaiveLadderGP FIT CPU time: 1.47 seconds.</code></pre>
+<pre class="r"><code>### 以 nvLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
+nvPred &lt;- nvLadderPred(nvLadderMdl, x0List, y0listTrue = y0List)
+cat(sprintf(&quot;RMSE(nvLadderMdl) = %.4f\n&quot;, sqrt(sum((nvPred$pred - nvPred$y_true)^2))))</code></pre>
+<pre><code>## RMSE(nvLadderMdl) = 98.6372</code></pre>
+<pre class="r"><code>### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
 aLadderMdl &lt;- aLadderFit(yList, xList, 
                          contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
                          nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## aLadderGP FIT CPU time: 1.68 seconds.</code></pre>
+<pre><code>## aLadderGP FIT CPU time: 1.69 seconds.</code></pre>
 <pre class="r"><code>### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
 aPred &lt;- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(aLadderMdl) = %.4f\n&quot;, sqrt(sum((aPred$pred - aPred$y_true)^2))))</code></pre>
-<pre><code>## RMSE(aLadderMdl) = 2167.9200</code></pre>
+<pre><code>## RMSE(aLadderMdl) = 8942.4319</code></pre>
 <pre class="r"><code>### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(o) FIT CPU time: 1.45 seconds.</code></pre>
+<pre><code>## mLadderGP(o) FIT CPU time: 2.06 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
 mPred_o &lt;- mLadderPred(mLadderMdl_o, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_o) = %.4f\n&quot;, sqrt(sum((mPred_o$pred - mPred_o$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_o) = 129.5082</code></pre>
+<pre><code>## RMSE(mLadderMdl_o) = 48.1215</code></pre>
 <pre class="r"><code>### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
                            contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
                            nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(n) FIT CPU time: 1.05 seconds.</code></pre>
+<pre><code>## mLadderGP(n) FIT CPU time: 1.55 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
 mPred_n &lt;- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_n) = %.4f\n&quot;, sqrt(sum((mPred_n$pred - mPred_n$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_n) = 16.8438</code></pre>
+<pre><code>## RMSE(mLadderMdl_n) = 14.6137</code></pre>
 </div>
 
 

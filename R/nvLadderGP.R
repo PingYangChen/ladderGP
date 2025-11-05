@@ -34,10 +34,8 @@ nvLadderFit <- function(yList, xList,
     
     nContiPar <- ncol(x)
     nVarPar <- max(z) + (0.5*max(z)*(max(z) - 1))
-    low_bound <- c(rep(min(contiParRange), nContiPar),
-                   rep(min(varParRange), nVarPar))
-    upp_bound <- c(rep(max(contiParRange), nContiPar),
-                   rep(max(varParRange), nVarPar))
+    low_bound <- c(rep(min(contiParRange), nContiPar))
+    upp_bound <- c(rep(max(contiParRange), nContiPar))
     
     alg_setting <- getPSOInfo(nSwarm = nSwarm, maxIter = maxIter, psoType = "quantum")
     
