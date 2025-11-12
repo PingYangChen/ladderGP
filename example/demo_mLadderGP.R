@@ -42,8 +42,8 @@ y0List <- lapply(1:length(p_data), function(k) {
 
 ### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_o <- mLadderFit(yList, xList, zType = "o", 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 
 
 ### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
@@ -52,8 +52,8 @@ cat(sprintf("RMSE(mLadderMdl_o) = %.4f\n", sqrt(sum((mPred_o$pred - mPred_o$y_tr
 
 ### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_n <- mLadderFit(yList, xList, zType = "n", 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 
 ### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
 mPred_n <- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)

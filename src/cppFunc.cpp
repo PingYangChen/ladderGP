@@ -56,7 +56,7 @@ Rcpp::List gpPred(arma::mat x0, arma::vec y, arma::mat x,
 
 // Stage as a ordinal variable
 //[[Rcpp::export]]
-double lgpOBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+double lgpOBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -67,14 +67,18 @@ double lgpOBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, a
   double tau;
   arma::mat theta;
   //double nugget = 0.;
-  lgpOBParam2vec(tau, theta, param, xzDim, zMax);
+  if (logParam) {
+    lgpOBParam2vec(tau, theta, arma::exp(param), xzDim, zMax);
+  } else{
+    lgpOBParam2vec(tau, theta, param, xzDim, zMax);
+  }
   lgpOBLogLik(negloglik, psi, invPsi, mu, sigma2, nugget, y, x, z, xzDim, 
               tau, theta);
   return negloglik;
 }
 
 //[[Rcpp::export]]
-Rcpp::List lgpOBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+Rcpp::List lgpOBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -85,7 +89,11 @@ Rcpp::List lgpOBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
   double tau;
   arma::mat theta;
   //double nugget = 0.;
-  lgpOBParam2vec(tau, theta, param, xzDim, zMax);
+  if (logParam) {
+    lgpOBParam2vec(tau, theta, arma::exp(param), xzDim, zMax);
+  } else{
+    lgpOBParam2vec(tau, theta, param, xzDim, zMax);
+  }
   lgpOBLogLik(negloglik, psi, invPsi, mu, sigma2, nugget, y, x, z, xzDim, 
               tau, theta);
   //
@@ -103,14 +111,18 @@ Rcpp::List lgpOBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
 
 //[[Rcpp::export]]
 Rcpp::List lgpOBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
-                     arma::rowvec param, arma::mat invPsi, double mu, double sigma2, double ei_alpha, double min_y)
+                     arma::rowvec param, arma::mat invPsi, double mu, double sigma2, double ei_alpha, double min_y, bool logParam)
 {
   arma::uword n0 = x0.n_rows;
   arma::uword zMax = z.max();
   //
   double tau;
   arma::mat theta;
-  lgpOBParam2vec(tau, theta, param, xzDim, zMax);
+  if (logParam) {
+    lgpOBParam2vec(tau, theta, arma::exp(param), xzDim, zMax);
+  } else{
+    lgpOBParam2vec(tau, theta, param, xzDim, zMax);
+  }
   //
   arma::vec y0(n0, fill::zeros);
   arma::vec mse(n0, fill::zeros);
@@ -132,7 +144,7 @@ Rcpp::List lgpOBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma
 // Stage as a nominal variable
 
 //[[Rcpp::export]]
-double lgpNBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+double lgpNBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -142,14 +154,18 @@ double lgpNBObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, a
   //
   arma::mat tau, theta;
   //double nugget = 0.;
-  lgpNBParam2vec(tau, theta, param, xzDim, zMax);
+  if (logParam) {
+    lgpNBParam2vec(tau, theta, arma::exp(param), xzDim, zMax);
+  } else{
+    lgpNBParam2vec(tau, theta, param, xzDim, zMax);
+  }
   lgpNBLogLik(negloglik, psi, invPsi, mu, sigma2, nugget, y, x, z, xzDim, 
               tau, theta);
   return negloglik;
 }
 
 //[[Rcpp::export]]
-Rcpp::List lgpNBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+Rcpp::List lgpNBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -159,7 +175,11 @@ Rcpp::List lgpNBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
   //
   arma::mat tau, theta;
   //double nugget = 0.;
-  lgpNBParam2vec(tau, theta, param, xzDim, zMax);
+  if (logParam) {
+    lgpNBParam2vec(tau, theta, arma::exp(param), xzDim, zMax);
+  } else{
+    lgpNBParam2vec(tau, theta, param, xzDim, zMax);
+  }
   lgpNBLogLik(negloglik, psi, invPsi, mu, sigma2, nugget, y, x, z, xzDim, 
               tau, theta);
   //
@@ -177,13 +197,17 @@ Rcpp::List lgpNBModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
 
 //[[Rcpp::export]]
 Rcpp::List lgpNBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
-                     arma::rowvec param, arma::mat invPsi, double mu, double sigma2, double ei_alpha, double min_y)
+                     arma::rowvec param, arma::mat invPsi, double mu, double sigma2, double ei_alpha, double min_y, bool logParam)
 {
   arma::uword n0 = x0.n_rows;
   arma::uword zMax = z.max();
   //
   arma::mat tau, theta;
-  lgpNBParam2vec(tau, theta, param, xzDim, zMax);
+  if (logParam) {
+    lgpNBParam2vec(tau, theta, arma::exp(param), xzDim, zMax);
+  } else{
+    lgpNBParam2vec(tau, theta, param, xzDim, zMax);
+  }
   //
   arma::vec y0(n0, fill::zeros);
   arma::vec mse(n0, fill::zeros);
@@ -204,7 +228,7 @@ Rcpp::List lgpNBPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma
 
 // Stage as interaction effect
 //[[Rcpp::export]]
-double aIntObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+double aIntObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -216,14 +240,18 @@ double aIntObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, ar
   arma::vec sigmaF;
   arma::mat sigmaInt;
   //double nugget = 0.;
-  aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  if (logParam) {
+    aIntParam2vec(thetaZ, sigmaF, sigmaInt, arma::exp(param), xzDim, zMax);
+  } else{
+    aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  }
   aIntLogLik(negloglik, psi, invPsi, mu, nugget, y, x, z, xzDim, 
              thetaZ, sigmaF, sigmaInt);
   return negloglik;
 }
 
 //[[Rcpp::export]]
-Rcpp::List aIntModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+Rcpp::List aIntModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -235,7 +263,11 @@ Rcpp::List aIntModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z,
   arma::vec sigmaF;
   arma::mat sigmaInt;
   //double nugget = 0.;
-  aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  if (logParam) {
+    aIntParam2vec(thetaZ, sigmaF, sigmaInt, arma::exp(param), xzDim, zMax);
+  } else{
+    aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  }
   aIntLogLik(negloglik, psi, invPsi, mu, nugget, y, x, z, xzDim, 
              thetaZ, sigmaF, sigmaInt);
   //
@@ -253,7 +285,7 @@ Rcpp::List aIntModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z,
 
 //[[Rcpp::export]]
 Rcpp::List aIntPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
-                    arma::rowvec param, arma::mat invPsi, double mu, double ei_alpha, double min_y)
+                    arma::rowvec param, arma::mat invPsi, double mu, double ei_alpha, double min_y, bool logParam)
 {
   arma::uword n0 = x0.n_rows;
   arma::uword zMax = z.max();
@@ -261,7 +293,11 @@ Rcpp::List aIntPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma:
   arma::mat thetaZ;
   arma::vec sigmaF;
   arma::mat sigmaInt;
-  aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  if (logParam) {
+    aIntParam2vec(thetaZ, sigmaF, sigmaInt, arma::exp(param), xzDim, zMax);
+  } else{
+    aIntParam2vec(thetaZ, sigmaF, sigmaInt, param, xzDim, zMax);
+  }
   //
   arma::vec y0(n0, fill::zeros);
   arma::vec mse(n0, fill::zeros);
@@ -282,7 +318,7 @@ Rcpp::List aIntPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma:
 // Independence across Stages
 
 //[[Rcpp::export]]
-double lgpNvObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+double lgpNvObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -292,13 +328,17 @@ double lgpNvObjCpp(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, a
   //
   arma::mat theta;
   //double nugget = 0.;
-  nvParam2vec(theta, param, xzDim, zMax);
+  if (logParam) {
+    nvParam2vec(theta, arma::exp(param), xzDim, zMax);
+  } else{
+    nvParam2vec(theta, param, xzDim, zMax);  
+  }
   nvLogLik(negloglik, psi, invPsi, mu, sigma, nugget, y, x, z, xzDim, theta);
   return negloglik;
 }
 
 //[[Rcpp::export]]
-Rcpp::List lgpNvModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget)
+Rcpp::List lgpNvModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim, double nugget, bool logParam)
 {
   arma::uword n = x.n_rows;
   arma::uword zMax = z.max();
@@ -308,7 +348,11 @@ Rcpp::List lgpNvModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
   //
   arma::mat theta;
   //double nugget = 0.;
-  nvParam2vec(theta, param, xzDim, zMax);
+  if (logParam) {
+    nvParam2vec(theta, arma::exp(param), xzDim, zMax);
+  } else{
+    nvParam2vec(theta, param, xzDim, zMax);  
+  }
   nvLogLik(negloglik, psi, invPsi, mu, sigma, nugget, y, x, z, xzDim, theta);
   //
   return List::create(Named("mu") = wrap(mu),
@@ -324,13 +368,17 @@ Rcpp::List lgpNvModel(arma::rowvec param, arma::vec y, arma::mat x, arma::uvec z
 
 //[[Rcpp::export]]
 Rcpp::List lgpNvPred(arma::mat x0, arma::uvec z0, arma::vec y, arma::mat x, arma::uvec z, arma::uword xzDim,
-                     arma::rowvec param, arma::mat invPsi, double mu, double sigma, double ei_alpha, double min_y)
+                     arma::rowvec param, arma::mat invPsi, double mu, double sigma, double ei_alpha, double min_y, bool logParam)
 {
   arma::uword n0 = x0.n_rows;
   arma::uword zMax = z.max();
   //
   arma::mat theta;
-  nvParam2vec(theta, param, xzDim, zMax);
+  if (logParam) {
+    nvParam2vec(theta, arma::exp(param), xzDim, zMax);
+  } else{
+    nvParam2vec(theta, param, xzDim, zMax);  
+  }
   //
   arma::vec y0(n0, fill::zeros);
   arma::vec mse(n0, fill::zeros);

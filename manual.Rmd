@@ -141,23 +141,24 @@ source('R/aladderGP.R')
 
 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型，`aLadderFit` 函數輸入值說明及使用範例如下：
 
-| 輸入變數名稱    | 說明                                                                                                   | 預設值         |
-| --------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
-| `yList`         | R list 物件。每個 list 內存放對應階數的單維反應變數 (見第一節範例)                                     |                |
-| `xList`         | R list 物件。每個 list 內存放對應階數的多維解釋變數 (見第一節範例)                                     |                |
-| `contiParRange` | 長度為 2 的 R 向量。$\theta^{(z)}$ 的搜尋範圍(最小值、最大值)。                                        | `10^c(-3, .5)` |
-| `varParRange`   | 長度為 2 的 R 向量。各 $\sigma$ 的搜尋範圍(最小值、最大值)。                                           | `10^c(-3, .5)` |
-| `nSwarm`        | 正整數。PSO 粒子數，用於 likelihood 最佳化。                                                           | `64`           |
-| `maxIter`       | 正整數。PSO 迭代次數，用於 likelihood 最佳化。                                                         | `200`          |
-| `nugget`        | 正數。GP 相關矩陣的正定性調整值，通常為很小的數，如 `1e-8`。若輸入 `0` 則由函數自動判斷是否加上調整值。| `0.`           |
-| `optVerbose`    | 是否顯示 likelihood 最佳化進度。                                                                       | `TRUE`         |
+| 輸入變數名稱       | 說明                                                                                                   | 預設值         |
+| ------------------ | ------------------------------------------------------------------------------------------------------ | -------------- |
+| `yList`            | R list 物件。每個 list 內存放對應階數的單維反應變數 (見第一節範例)                                     |                |
+| `xList`            | R list 物件。每個 list 內存放對應階數的多維解釋變數 (見第一節範例)                                     |                |
+| `contiParLogRange` | 長度為 2 的 R 向量。$\theta^{(z)}$ 的 **log 尺度** 搜尋範圍(最小值、最大值)。                          | `c(-6.5, 1.5)` |
+| `varParLogRange`   | 長度為 2 的 R 向量。各 $\sigma$ 的 **log 尺度** 搜尋範圍(最小值、最大值)。                             | `c(-6.5, 1.5)` |
+| `nSwarm`           | 正整數。PSO 粒子數，用於 likelihood 最佳化。                                                           | `64`           |
+| `maxIter`          | 正整數。PSO 迭代次數，用於 likelihood 最佳化。                                                         | `200`          |
+| `psoType`          | 文字。PSO 機制選擇，有兩項可選：`"basic"` 或 `"quantum`                                                | `"basic"`      |
+| `nugget`           | 正數。GP 相關矩陣的正定性調整值，通常為很小的數，如 `1e-6`。若輸入 `0` 則由函數自動判斷是否加上調整值。| `1e-6`         |
+| `optVerbose`       | 是否顯示 likelihood 最佳化進度。                                                                       | `TRUE`         |
 
 
 
 ```{r aladderm, echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE}
 aLadderMdl <- aLadderFit(yList, xList, 
-                         contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
-                         nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                         contiParLogRange = c(-6.5, 1.5), varParLogRange = c(-6.5, 1.5), 
+                         nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 ```
 
 
@@ -247,30 +248,32 @@ source('R/mladderGP.R')
 
 ### `mLadderFit` 
 
-| 輸入變數名稱    | 說明                                                                                                   | 預設值         |
-| --------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
-| `yList`         | R list 物件。每個 list 內存放對應階數的單維反應變數 (見第一節範例)                                     |                |
-| `xList`         | R list 物件。每個 list 內存放對應階數的多維解釋變數 (見第一節範例)                                     |                |
-| `zType`         | Char 物件。指定不同階數間訊息的關聯方式，`"o"`：視階數為 ordinal 變數，`"n"`：視階數為 nominal 變數。  | `"o"`          |
-| `contiParRange` | 長度為 2 的 R 向量。$\theta^{(z)}$ 的搜尋範圍(最小值、最大值)。                                        | `10^c(-3, .5)` |
-| `categParRange` | 長度為 2 的 R 向量。各 $\tau_{z_s, z_t}$ 的搜尋範圍(最小值、最大值)。僅適用於 `zType = "n"` 時。       | `c(0.15, 0.5)` |
-| `nSwarm`        | 正整數。PSO 粒子數，用於 likelihood 最佳化。                                                           | `64`           |
-| `maxIter`       | 正整數。PSO 迭代次數，用於 likelihood 最佳化。                                                         | `200`          |
-| `nugget`        | 正數。GP 相關矩陣的正定性調整值，通常為很小的數，如 `1e-8`。若輸入 `0` 則由函數自動判斷是否加上調整值。| `0.`           |
-| `optVerbose`    | 是否顯示 likelihood 最佳化進度。                                                                       | `TRUE`         |
+| 輸入變數名稱       | 說明                                                                                                   | 預設值         |
+| ------------------ | ------------------------------------------------------------------------------------------------------ | -------------- |
+| `yList`            | R list 物件。每個 list 內存放對應階數的單維反應變數 (見第一節範例)                                     |                |
+| `xList`            | R list 物件。每個 list 內存放對應階數的多維解釋變數 (見第一節範例)                                     |                |
+| `zType`            | Char 物件。指定不同階數間訊息的關聯方式，`"o"`：視階數為 ordinal 變數，`"n"`：視階數為 nominal 變數。  | `"o"`          |
+| `contiParLogRange` | 長度為 2 的 R 向量。$\theta^{(z)}$ 的 **log 尺度** 搜尋範圍(最小值、最大值)。                          | `c(-6.5, 1.5)` |
+| `categParLogRange` | 長度為 2 的 R 向量。各 $\tau_{z_s, z_t}$ 的 **log 尺度** 搜尋範圍(最小值、最大值)。                    | `c(-2.0, 0.5)` |
+|                    | 僅適用於 `zType = "n"` 時。                                                                            |                |
+| `nSwarm`           | 正整數。PSO 粒子數，用於 likelihood 最佳化。                                                           | `64`           |
+| `maxIter`          | 正整數。PSO 迭代次數，用於 likelihood 最佳化。                                                         | `200`          |
+| `psoType`          | 文字。PSO 機制選擇，有兩項可選：`"basic"` 或 `"quantum`                                                | `"basic"`      |
+| `nugget`           | 正數。GP 相關矩陣的正定性調整值，通常為很小的數，如 `1e-6`。若輸入 `0` 則由函數自動判斷是否加上調整值。| `1e-6`         |
+| `optVerbose`       | 是否顯示 likelihood 最佳化進度。                                                                       | `TRUE`         |
 
 
 
 ```{r mladderom, echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE}
 mLadderMdl_o <- mLadderFit(yList, xList, zType = "o", 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 ```
 
 ```{r mladdernm, echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE}
 mLadderMdl_n <- mLadderFit(yList, xList, zType = "n", 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 ```
 
 | 輸出變數名稱 | 說明                                                                                                   |
@@ -350,21 +353,22 @@ source('R/nvladderGP.R')
 
 ### `nvLadderFit` 
 
-| 輸入變數名稱    | 說明                                                                                                   | 預設值         |
-| --------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
-| `yList`         | R list 物件。每個 list 內存放對應階數的單維反應變數 (見第一節範例)                                     |                |
-| `xList`         | R list 物件。每個 list 內存放對應階數的多維解釋變數 (見第一節範例)                                     |                |
-| `contiParRange` | 長度為 2 的 R 向量。$\theta^{(z)}$ 的搜尋範圍(最小值、最大值)。                                        | `10^c(-3, .5)` |
-| `nSwarm`        | 正整數。PSO 粒子數，用於 likelihood 最佳化。                                                           | `64`           |
-| `maxIter`       | 正整數。PSO 迭代次數，用於 likelihood 最佳化。                                                         | `200`          |
-| `nugget`        | 正數。GP 相關矩陣的正定性調整值，通常為很小的數，如 `1e-8`。若輸入 `0` 則由函數自動判斷是否加上調整值。| `0.`           |
-| `optVerbose`    | 是否顯示 likelihood 最佳化進度。                                                                       | `TRUE`         |
+| 輸入變數名稱       | 說明                                                                                                   | 預設值         |
+| ------------------ | ------------------------------------------------------------------------------------------------------ | -------------- |
+| `yList`            | R list 物件。每個 list 內存放對應階數的單維反應變數 (見第一節範例)                                     |                |
+| `xList`            | R list 物件。每個 list 內存放對應階數的多維解釋變數 (見第一節範例)                                     |                |
+| `contiParLogRange` | 長度為 2 的 R 向量。$\theta^{(z)}$ 的 **log 尺度** 搜尋範圍(最小值、最大值)。                          | `c(-6.5, 1.5)` |
+| `nSwarm`           | 正整數。PSO 粒子數，用於 likelihood 最佳化。                                                           | `64`           |
+| `maxIter`          | 正整數。PSO 迭代次數，用於 likelihood 最佳化。                                                         | `200`          |
+| `psoType`          | 文字。PSO 機制選擇，有兩項可選：`"basic"` 或 `"quantum`                                                | `"basic"`      |
+| `nugget`           | 正數。GP 相關矩陣的正定性調整值，通常為很小的數，如 `1e-6`。若輸入 `0` 則由函數自動判斷是否加上調整值。| `1e-6`         |
+| `optVerbose`       | 是否顯示 likelihood 最佳化進度。                                                                       | `TRUE`         |
 
 
 
 ```{r nvladderm, echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE}
-nvLadderMdl <- nvLadderFit(yList, xList, contiParRange = 10^c(-3, .5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+nvLadderMdl <- nvLadderFit(yList, xList, contiParLogRange = c(-6.5, 1.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 ```
 
 | 輸出變數名稱 | 說明                                                                                                   |
@@ -457,38 +461,41 @@ y0List <- lapply(1:length(p_data), function(k) {
 })
 
 
-### 建立不包含描述兩階段數相異實驗資料間的關聯參數之 GP 模型 
-nvLadderMdl <- nvLadderFit(yList, xList, contiParRange = 10^c(-3, .5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+# ### 建立不包含描述兩階段數相異實驗資料間的關聯參數之 GP 模型 
+# #(不穩定)
+# nvLadderMdl <- nvLadderFit(yList, xList, contiParLogRange = c(-6.5, 1.5),
+#                            nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
+# 
+# 
+# ### 以 nvLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
+# nvPred <- nvLadderPred(nvLadderMdl, x0List, y0listTrue = y0List)
+# cat(sprintf("RMSE(nvLadderMdl) = %.4f\n", sqrt(sum((nvPred$pred - nvPred$y_true)^2))))
 
-
-### 以 nvLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
-nvPred <- nvLadderPred(nvLadderMdl, x0List, y0listTrue = y0List)
-cat(sprintf("RMSE(nvLadderMdl) = %.4f\n", sqrt(sum((nvPred$pred - nvPred$y_true)^2))))
 
 ### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
 aLadderMdl <- aLadderFit(yList, xList, 
-                         contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
-                         nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                         contiParLogRange = c(-6.5, 1.5), varParLogRange = c(-6.5, 1.5), 
+                         nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 
 ### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
 aPred <- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)
 cat(sprintf("RMSE(aLadderMdl) = %.4f\n", sqrt(sum((aPred$pred - aPred$y_true)^2))))
 
+
 ### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_o <- mLadderFit(yList, xList, zType = "o", 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
-
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 
 ### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
 mPred_o <- mLadderPred(mLadderMdl_o, x0List, y0listTrue = y0List)
 cat(sprintf("RMSE(mLadderMdl_o) = %.4f\n", sqrt(sum((mPred_o$pred - mPred_o$y_true)^2))))
 
+
 ### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_n <- mLadderFit(yList, xList, zType = "n", 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 
 ### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
 mPred_n <- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)

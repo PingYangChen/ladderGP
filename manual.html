@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ping-Yang Chen" />
 
-<meta name="date" content="2025-11-05" />
+<meta name="date" content="2025-11-12" />
 
 <title>Manual of Gaussian Process Modelling Functions for Ladder-shaped Input Data</title>
 
@@ -1500,7 +1500,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Manual of Gaussian Process Modelling
 Functions for Ladder-shaped Input Data</h1>
 <h4 class="author">Ping-Yang Chen</h4>
-<h4 class="date">2025-11-05</h4>
+<h4 class="date">2025-11-12</h4>
 
 </div>
 
@@ -1650,8 +1650,8 @@ v\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\t
 模型，<code>aLadderFit</code> 函數輸入值說明及使用範例如下：</p>
 <table style="width:100%;">
 <colgroup>
-<col width="11%" />
-<col width="77%" />
+<col width="13%" />
+<col width="76%" />
 <col width="10%" />
 </colgroup>
 <thead>
@@ -1675,16 +1675,16 @@ v\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\t
 <td></td>
 </tr>
 <tr class="odd">
-<td><code>contiParRange</code></td>
-<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span>
-的搜尋範圍(最小值、最大值)。</td>
-<td><code>10^c(-3, .5)</code></td>
+<td><code>contiParLogRange</code></td>
+<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span> 的 <strong>log 尺度</strong>
+搜尋範圍(最小值、最大值)。</td>
+<td><code>c(-6.5, 1.5)</code></td>
 </tr>
 <tr class="even">
-<td><code>varParRange</code></td>
+<td><code>varParLogRange</code></td>
 <td>長度為 2 的 R 向量。各 <span class="math inline">\(\sigma\)</span>
-的搜尋範圍(最小值、最大值)。</td>
-<td><code>10^c(-3, .5)</code></td>
+的 <strong>log 尺度</strong> 搜尋範圍(最小值、最大值)。</td>
+<td><code>c(-6.5, 1.5)</code></td>
 </tr>
 <tr class="odd">
 <td><code>nSwarm</code></td>
@@ -1697,13 +1697,19 @@ v\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\t
 <td><code>200</code></td>
 </tr>
 <tr class="odd">
-<td><code>nugget</code></td>
-<td>正數。GP 相關矩陣的正定性調整值，通常為很小的數，如
-<code>1e-8</code>。若輸入 <code>0</code>
-則由函數自動判斷是否加上調整值。</td>
-<td><code>0.</code></td>
+<td><code>psoType</code></td>
+<td>文字。PSO 機制選擇，有兩項可選：<code>&quot;basic&quot;</code> 或
+<code>&quot;quantum</code></td>
+<td><code>&quot;basic&quot;</code></td>
 </tr>
 <tr class="even">
+<td><code>nugget</code></td>
+<td>正數。GP 相關矩陣的正定性調整值，通常為很小的數，如
+<code>1e-6</code>。若輸入 <code>0</code>
+則由函數自動判斷是否加上調整值。</td>
+<td><code>1e-6</code></td>
+</tr>
+<tr class="odd">
 <td><code>optVerbose</code></td>
 <td>是否顯示 likelihood 最佳化進度。</td>
 <td><code>TRUE</code></td>
@@ -1711,8 +1717,8 @@ v\)</span>，以及各解釋變數的距離參數 <span class="math inline">\(\t
 </tbody>
 </table>
 <pre class="r"><code>aLadderMdl &lt;- aLadderFit(yList, xList, 
-                         contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
-                         nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+                         contiParLogRange = c(-6.5, 1.5), varParLogRange = c(-6.5, 1.5), 
+                         nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
 <p><code>aLadderFit</code> 函數輸出一個 R List
 物件，包含各項模型參數估計值與原始訓練資料，輸出值說明如下：</p>
 <table>
@@ -1882,8 +1888,8 @@ MSE，輸出值說明如下：</p>
 <h3><code>mLadderFit</code></h3>
 <table style="width:100%;">
 <colgroup>
-<col width="11%" />
-<col width="77%" />
+<col width="13%" />
+<col width="76%" />
 <col width="10%" />
 </colgroup>
 <thead>
@@ -1913,34 +1919,45 @@ ordinal 變數，<code>&quot;n&quot;</code>：視階數為 nominal 變數。</td
 <td><code>&quot;o&quot;</code></td>
 </tr>
 <tr class="even">
-<td><code>contiParRange</code></td>
-<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span>
-的搜尋範圍(最小值、最大值)。</td>
-<td><code>10^c(-3, .5)</code></td>
+<td><code>contiParLogRange</code></td>
+<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span> 的 <strong>log 尺度</strong>
+搜尋範圍(最小值、最大值)。</td>
+<td><code>c(-6.5, 1.5)</code></td>
 </tr>
 <tr class="odd">
-<td><code>categParRange</code></td>
+<td><code>categParLogRange</code></td>
 <td>長度為 2 的 R 向量。各 <span class="math inline">\(\tau_{z_s,
-z_t}\)</span> 的搜尋範圍(最小值、最大值)。僅適用於
-<code>zType = &quot;n&quot;</code> 時。</td>
-<td><code>c(0.15, 0.5)</code></td>
+z_t}\)</span> 的 <strong>log 尺度</strong>
+搜尋範圍(最小值、最大值)。</td>
+<td><code>c(-2.0, 0.5)</code></td>
 </tr>
 <tr class="even">
+<td></td>
+<td>僅適用於 <code>zType = &quot;n&quot;</code> 時。</td>
+<td></td>
+</tr>
+<tr class="odd">
 <td><code>nSwarm</code></td>
 <td>正整數。PSO 粒子數，用於 likelihood 最佳化。</td>
 <td><code>64</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>maxIter</code></td>
 <td>正整數。PSO 迭代次數，用於 likelihood 最佳化。</td>
 <td><code>200</code></td>
 </tr>
+<tr class="odd">
+<td><code>psoType</code></td>
+<td>文字。PSO 機制選擇，有兩項可選：<code>&quot;basic&quot;</code> 或
+<code>&quot;quantum</code></td>
+<td><code>&quot;basic&quot;</code></td>
+</tr>
 <tr class="even">
 <td><code>nugget</code></td>
 <td>正數。GP 相關矩陣的正定性調整值，通常為很小的數，如
-<code>1e-8</code>。若輸入 <code>0</code>
+<code>1e-6</code>。若輸入 <code>0</code>
 則由函數自動判斷是否加上調整值。</td>
-<td><code>0.</code></td>
+<td><code>1e-6</code></td>
 </tr>
 <tr class="odd">
 <td><code>optVerbose</code></td>
@@ -1950,11 +1967,11 @@ z_t}\)</span> 的搜尋範圍(最小值、最大值)。僅適用於
 </tbody>
 </table>
 <pre class="r"><code>mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
 <pre class="r"><code>mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
 <table>
 <colgroup>
 <col width="10%" />
@@ -2125,8 +2142,8 @@ MSE，輸出值說明如下：</p>
 <h3><code>nvLadderFit</code></h3>
 <table style="width:100%;">
 <colgroup>
-<col width="11%" />
-<col width="77%" />
+<col width="13%" />
+<col width="76%" />
 <col width="10%" />
 </colgroup>
 <thead>
@@ -2150,10 +2167,10 @@ MSE，輸出值說明如下：</p>
 <td></td>
 </tr>
 <tr class="odd">
-<td><code>contiParRange</code></td>
-<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span>
-的搜尋範圍(最小值、最大值)。</td>
-<td><code>10^c(-3, .5)</code></td>
+<td><code>contiParLogRange</code></td>
+<td>長度為 2 的 R 向量。<span class="math inline">\(\theta^{(z)}\)</span> 的 <strong>log 尺度</strong>
+搜尋範圍(最小值、最大值)。</td>
+<td><code>c(-6.5, 1.5)</code></td>
 </tr>
 <tr class="even">
 <td><code>nSwarm</code></td>
@@ -2166,21 +2183,27 @@ MSE，輸出值說明如下：</p>
 <td><code>200</code></td>
 </tr>
 <tr class="even">
-<td><code>nugget</code></td>
-<td>正數。GP 相關矩陣的正定性調整值，通常為很小的數，如
-<code>1e-8</code>。若輸入 <code>0</code>
-則由函數自動判斷是否加上調整值。</td>
-<td><code>0.</code></td>
+<td><code>psoType</code></td>
+<td>文字。PSO 機制選擇，有兩項可選：<code>&quot;basic&quot;</code> 或
+<code>&quot;quantum</code></td>
+<td><code>&quot;basic&quot;</code></td>
 </tr>
 <tr class="odd">
+<td><code>nugget</code></td>
+<td>正數。GP 相關矩陣的正定性調整值，通常為很小的數，如
+<code>1e-6</code>。若輸入 <code>0</code>
+則由函數自動判斷是否加上調整值。</td>
+<td><code>1e-6</code></td>
+</tr>
+<tr class="even">
 <td><code>optVerbose</code></td>
 <td>是否顯示 likelihood 最佳化進度。</td>
 <td><code>TRUE</code></td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>nvLadderMdl &lt;- nvLadderFit(yList, xList, contiParRange = 10^c(-3, .5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
+<pre class="r"><code>nvLadderMdl &lt;- nvLadderFit(yList, xList, contiParLogRange = c(-6.5, 1.5), 
+                           nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
 <table>
 <colgroup>
 <col width="10%" />
@@ -2356,41 +2379,44 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
 })
 
 
-### 建立不包含描述兩階段數相異實驗資料間的關聯參數之 GP 模型 
-nvLadderMdl &lt;- nvLadderFit(yList, xList, contiParRange = 10^c(-3, .5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## NaiveLadderGP FIT CPU time: 1.47 seconds.</code></pre>
-<pre class="r"><code>### 以 nvLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
-nvPred &lt;- nvLadderPred(nvLadderMdl, x0List, y0listTrue = y0List)
-cat(sprintf(&quot;RMSE(nvLadderMdl) = %.4f\n&quot;, sqrt(sum((nvPred$pred - nvPred$y_true)^2))))</code></pre>
-<pre><code>## RMSE(nvLadderMdl) = 98.6372</code></pre>
-<pre class="r"><code>### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
+# ### 建立不包含描述兩階段數相異實驗資料間的關聯參數之 GP 模型 
+# #(不穩定)
+# nvLadderMdl &lt;- nvLadderFit(yList, xList, contiParLogRange = c(-6.5, 1.5),
+#                            nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)
+# 
+# 
+# ### 以 nvLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
+# nvPred &lt;- nvLadderPred(nvLadderMdl, x0List, y0listTrue = y0List)
+# cat(sprintf(&quot;RMSE(nvLadderMdl) = %.4f\n&quot;, sqrt(sum((nvPred$pred - nvPred$y_true)^2))))
+
+
+### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
 aLadderMdl &lt;- aLadderFit(yList, xList, 
-                         contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
-                         nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## aLadderGP FIT CPU time: 1.69 seconds.</code></pre>
+                         contiParLogRange = c(-6.5, 1.5), varParLogRange = c(-6.5, 1.5), 
+                         nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
+<pre><code>## aLadderGP FIT CPU time: 0.76 seconds.</code></pre>
 <pre class="r"><code>### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
 aPred &lt;- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(aLadderMdl) = %.4f\n&quot;, sqrt(sum((aPred$pred - aPred$y_true)^2))))</code></pre>
-<pre><code>## RMSE(aLadderMdl) = 8942.4319</code></pre>
+<pre><code>## RMSE(aLadderMdl) = 23.8739</code></pre>
 <pre class="r"><code>### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(o) FIT CPU time: 2.06 seconds.</code></pre>
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
+<pre><code>## mLadderGP(o) FIT CPU time: 0.50 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
 mPred_o &lt;- mLadderPred(mLadderMdl_o, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_o) = %.4f\n&quot;, sqrt(sum((mPred_o$pred - mPred_o$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_o) = 48.1215</code></pre>
+<pre><code>## RMSE(mLadderMdl_o) = 37.1593</code></pre>
 <pre class="r"><code>### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
-                           contiParRange = 10^c(-3, .5), categParRange = c(0.15, 0.5), 
-                           nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(n) FIT CPU time: 1.55 seconds.</code></pre>
+                           contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
+                           nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
+<pre><code>## mLadderGP(n) FIT CPU time: 0.48 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
 mPred_n &lt;- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_n) = %.4f\n&quot;, sqrt(sum((mPred_n$pred - mPred_n$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_n) = 14.6137</code></pre>
+<pre><code>## RMSE(mLadderMdl_n) = 20.8521</code></pre>
 </div>
 
 

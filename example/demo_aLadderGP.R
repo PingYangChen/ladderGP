@@ -42,8 +42,8 @@ y0List <- lapply(1:length(p_data), function(k) {
 
 ### 建立包含交互作用以描述兩不同階段數實驗資料的連加相關結構 GP 模型
 aLadderMdl <- aLadderFit(yList, xList, 
-                         contiParRange = 10^c(-3, .5), varParRange = 10^c(-3, .5), 
-                         nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = FALSE)
+                         contiParLogRange = c(-6.5, 1.5), varParLogRange = c(-6.5, 1.5), 
+                         nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = FALSE)
 
 ### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
 aPred <- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)

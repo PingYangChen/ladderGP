@@ -13,9 +13,9 @@ sourceCpp(file.path('src/cppFunc.cpp'))
 # x: matrix
 # z: integer vector
 mLadderFit <- function(yList, xList, zType = c("o", "n"),
-                       contiParRange = 10^c(-3, .5), 
-                       categParRange = c(0.15, 0.5), 
-                       nSwarm = 64, maxIter = 200, nugget = 0., optVerbose = TRUE) {
+                       contiParLogRange = c(-6.5, 1.5), 
+                       categParLogRange = c(-2.0, 0.5), 
+                       nSwarm = 64, maxIter = 200, psoType = "basic", nugget = 1e-6, optVerbose = TRUE) {
  
   cputime <- system.time({
     stopifnot(length(xList) == length(yList))
@@ -33,32 +33,32 @@ mLadderFit <- function(yList, xList, zType = c("o", "n"),
     }
     stopifnot(all(dimCheck == 0))
     
-    alg_setting <- getPSOInfo(nSwarm = nSwarm, maxIter = maxIter, psoType = "quantum")
+    alg_setting <- getPSOInfo(nSwarm = nSwarm, maxIter = maxIter, psoType = psoType)
     
     if (zType == "o") {
       nContiPar <- ncol(x) + 1
-      low_bound <- c(rep(min(contiParRange), nContiPar))
-      upp_bound <- c(rep(max(contiParRange), nContiPar))
+      low_bound <- c(rep(min(contiParLogRange), nContiPar))
+      upp_bound <- c(rep(max(contiParLogRange), nContiPar))
       
       res <- globpso(objFunc = lgpOBObjCpp, lower = low_bound, upper = upp_bound,
                      PSO_INFO = alg_setting, verbose = optVerbose,
-                     y = y, x = x, z = z, xzDim = xzDim, nugget = nugget)
+                     y = y, x = x, z = z, xzDim = xzDim, nugget = nugget, logParam = TRUE)
       #res$val
-      mdl <- lgpOBModel(param = res$par, y = y, x = x, z = z, xzDim = xzDim, nugget = nugget)
+      mdl <- lgpOBModel(param = res$par, y = y, x = x, z = z, xzDim = xzDim, nugget = nugget, logParam = TRUE)
       
     } else if (zType == "n") {
       nContiPar <- ncol(x)
       nCategPar <- (0.5*max(z)*(max(z) - 1))
-      low_bound <- c(rep(min(contiParRange), nContiPar),
-                     rep(min(categParRange), nCategPar))
-      upp_bound <- c(rep(max(contiParRange), nContiPar),
-                     rep(max(categParRange), nCategPar))
+      low_bound <- c(rep(min(contiParLogRange), nContiPar),
+                     rep(min(categParLogRange), nCategPar))
+      upp_bound <- c(rep(max(contiParLogRange), nContiPar),
+                     rep(max(categParLogRange), nCategPar))
       
       res <- globpso(objFunc = lgpNBObjCpp, lower = low_bound, upper = upp_bound,
                      PSO_INFO = alg_setting, verbose = optVerbose,
-                     y = y, x = x, z = z, xzDim = xzDim, nugget = nugget)
+                     y = y, x = x, z = z, xzDim = xzDim, nugget = nugget, logParam = TRUE)
       #res$val
-      mdl <- lgpNBModel(param = res$par, y = y, x = x, z = z, xzDim = xzDim, nugget = nugget)
+      mdl <- lgpNBModel(param = res$par, y = y, x = x, z = z, xzDim = xzDim, nugget = nugget, logParam = TRUE)
     } else {
       stop(sprintf("ERROR: zType should be 'n' or 'o'\n"))
     }
@@ -103,10 +103,10 @@ mLadderPred <- function(gpMdl, x0List, y0listTrue = NULL, ei_alpha = 0.5, min_y 
     zType <- gpMdl$zType
     if (zType == "o") {
       pred <- lgpOBPred(x0, z0, gpMdl$data$y, gpMdl$data$x, gpMdl$data$z, gpMdl$data$xzDim,
-                        gpMdl$vecParams, gpMdl$invPsi, gpMdl$mu, gpMdl$sigma2, ei_alpha, min_y)
+                        gpMdl$vecParams, gpMdl$invPsi, gpMdl$mu, gpMdl$sigma2, ei_alpha, min_y, logParam = TRUE)
     } else if (zType == "n") {
       pred <- lgpNBPred(x0, z0, gpMdl$data$y, gpMdl$data$x, gpMdl$data$z, gpMdl$data$xzDim,
-                        gpMdl$vecParams, gpMdl$invPsi, gpMdl$mu, gpMdl$sigma2, ei_alpha, min_y)
+                        gpMdl$vecParams, gpMdl$invPsi, gpMdl$mu, gpMdl$sigma2, ei_alpha, min_y, logParam = TRUE)
     }
    
   })[3]

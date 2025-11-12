@@ -97,25 +97,10 @@ void nvLogLik(double &negloglik, arma::mat &psi, arma::mat &invPsi, double &mu, 
   double n_double = (double)n;
   arma::vec onevec(n, fill::ones);
   nvCorrMat(psi, x, z, xzDim, thetaZ);
-  /*
-   arma::vec eigval;
-   arma::mat eigvec;
-   arma::eig_sym(eigval, eigvec, psi);
-   double checkCond = std::abs(eigval.max()) - 1e8*std::abs(eigval.min());
-   if ((nugget == 0) & (checkCond >= 0)) {
-   nugget = checkCond/(1e8 - 1);
-   }
-   */
-  double rcondNum = arma::rcond(psi);
-  if ((nugget == 0) & (rcondNum < psi.n_rows*datum::eps)) {
-    nugget = (double)(psi.n_rows)/(1e12 - 1);
-  }
-  arma::mat eyemat(n, n, fill::eye);
-  psi += nugget*eyemat;
+  bool invSucc = 0;
+  calcMatrixInv(invSucc, invPsi, psi, nugget);
   double detPsi;
   double signDetPsi;
-  bool invSucc;
-  invSucc = arma::inv_sympd(invPsi, psi);
   arma::log_det(detPsi, signDetPsi, psi);
   //if (std::isfinite(detPsi) & (signDetPsi >= 0)) 
   if (invSucc) {
