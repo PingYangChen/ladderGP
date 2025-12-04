@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ping-Yang Chen" />
 
-<meta name="date" content="2025-11-12" />
+<meta name="date" content="2025-12-04" />
 
 <title>Manual of Gaussian Process Modelling Functions for Ladder-shaped Input Data</title>
 
@@ -1500,7 +1500,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">Manual of Gaussian Process Modelling
 Functions for Ladder-shaped Input Data</h1>
 <h4 class="author">Ping-Yang Chen</h4>
-<h4 class="date">2025-11-12</h4>
+<h4 class="date">2025-12-04</h4>
 
 </div>
 
@@ -2394,29 +2394,29 @@ y0List &lt;- lapply(1:length(p_data), function(k) {
 aLadderMdl &lt;- aLadderFit(yList, xList, 
                          contiParLogRange = c(-6.5, 1.5), varParLogRange = c(-6.5, 1.5), 
                          nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
-<pre><code>## aLadderGP FIT CPU time: 0.76 seconds.</code></pre>
+<pre><code>## aLadderGP FIT CPU time: 0.74 seconds.</code></pre>
 <pre class="r"><code>### 以 aLadderMdl GP 模型對測試資料進行預測並檢視 RMSE
 aPred &lt;- aLadderPred(aLadderMdl, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(aLadderMdl) = %.4f\n&quot;, sqrt(sum((aPred$pred - aPred$y_true)^2))))</code></pre>
-<pre><code>## RMSE(aLadderMdl) = 23.8739</code></pre>
+<pre><code>## RMSE(aLadderMdl) = 22.8776</code></pre>
 <pre class="r"><code>### 建立包含 Ordinal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_o &lt;- mLadderFit(yList, xList, zType = &quot;o&quot;, 
                            contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
                            nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(o) FIT CPU time: 0.50 seconds.</code></pre>
+<pre><code>## mLadderGP(o) FIT CPU time: 0.49 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_o GP 模型對測試資料進行預測並檢視 RMSE
 mPred_o &lt;- mLadderPred(mLadderMdl_o, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_o) = %.4f\n&quot;, sqrt(sum((mPred_o$pred - mPred_o$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_o) = 37.1593</code></pre>
+<pre><code>## RMSE(mLadderMdl_o) = 23.7728</code></pre>
 <pre class="r"><code>### 建立包含 Nominal Type 關聯參數以描述兩不同階段數實驗資料的連乘相關結構 GP 模型
 mLadderMdl_n &lt;- mLadderFit(yList, xList, zType = &quot;n&quot;, 
                            contiParLogRange = c(-6.5, 1.5), categParLogRange = c(-2.0, 0.5), 
                            nSwarm = 64, maxIter = 200, psoType = &quot;basic&quot;, nugget = 1e-6, optVerbose = FALSE)</code></pre>
-<pre><code>## mLadderGP(n) FIT CPU time: 0.48 seconds.</code></pre>
+<pre><code>## mLadderGP(n) FIT CPU time: 0.50 seconds.</code></pre>
 <pre class="r"><code>### 以 mLadderMdl_n GP 模型對測試資料進行預測並檢視 RMSE
 mPred_n &lt;- mLadderPred(mLadderMdl_n, x0List, y0listTrue = y0List)
 cat(sprintf(&quot;RMSE(mLadderMdl_n) = %.4f\n&quot;, sqrt(sum((mPred_n$pred - mPred_n$y_true)^2))))</code></pre>
-<pre><code>## RMSE(mLadderMdl_n) = 20.8521</code></pre>
+<pre><code>## RMSE(mLadderMdl_n) = 23.9837</code></pre>
 </div>
 
 
