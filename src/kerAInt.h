@@ -88,7 +88,7 @@ void aIntCorrMat(arma::mat &psi, const arma::mat &x, const arma::uvec &z, const 
 {
   arma::uword n = x.n_rows;
   for (uword i = 0; i < n; i++) {
-    for (uword j = 0; j < i; j++) {
+    for (uword j = 0; j <= i; j++) {
       arma::rowvec xi = x.row(i); 
       arma::rowvec xj = x.row(j);
       arma::uword zi = z(i);
